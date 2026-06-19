@@ -23,6 +23,7 @@ class NotebookLine(typing.TypedDict):
 def parse_code_lines(content: bytes) -> list[NotebookLine]:
     nb = ujson.loads(content)
     lines: list[NotebookLine] = []
+    line_index = 0
 
     for cell_index, cell in enumerate(nb.get("cells", [])):
         if cell.get("cell_type") != "code":
@@ -32,7 +33,8 @@ def parse_code_lines(content: bytes) -> list[NotebookLine]:
         if isinstance(source, list):
             source = "".join(source)
 
-        for line_index, line in enumerate(source.splitlines()):
+        for line in source.splitlines():
             lines.append(NotebookLine(line=line_index, content=line, step=Step.UNKNOWN))
+            line_index += 1
 
     return lines
