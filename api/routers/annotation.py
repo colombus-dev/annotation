@@ -49,6 +49,7 @@ def post_key_value(
     scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
     if key not in scope:
         scope[key] = {}
+    body.name = body.name.lower().replace(" ", "-")
     if body.name in scope[key]:
         raise fastapi.HTTPException(
             status_code=400,
