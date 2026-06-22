@@ -1,6 +1,6 @@
 # Annotation
 
-REST API to upload Jupyter notebooks and annotate their code lines with pipeline steps.
+REST API to upload and annotate ML source code line by line.
 
 ## Setup
 

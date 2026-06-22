@@ -2,8 +2,8 @@ import typing
 
 import fastapi
 
-NOTEBOOKS = "notebooks"
-STEPS = "steps"
+SOURCES = "sources"
+ANNOTATION_KEYS = "annotation_keys"
 
 
 class MemoryCache:

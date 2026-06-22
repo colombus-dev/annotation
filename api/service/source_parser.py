@@ -11,18 +11,17 @@ class Step(enum.Enum):
     TRAINING = "training"
     EVALUATION = "evaluation"
     PREDICTION = "prediction"
-    UNKNOWN = "unknown"
 
 
-class NotebookLine(typing.TypedDict):
+class SourceLine(typing.TypedDict):
     line: int
     content: str
-    step: Step
+    annotations: dict[str, str]
 
 
-def parse_code_lines(content: bytes) -> list[NotebookLine]:
+def parse_notebook(content: bytes) -> list[SourceLine]:
     nb = ujson.loads(content)
-    lines: list[NotebookLine] = []
+    lines: list[SourceLine] = []
     line_index = 0
 
     for cell_index, cell in enumerate(nb.get("cells", [])):
@@ -34,7 +33,21 @@ def parse_code_lines(content: bytes) -> list[NotebookLine]:
             source = "".join(source)
 
         for line in source.splitlines():
-            lines.append(NotebookLine(line=line_index, content=line, step=Step.UNKNOWN))
+            lines.append(SourceLine(line=line_index, content=line, annotations={}))
             line_index += 1
 
     return lines
+
+
+def parse_python(content: bytes) -> list[SourceLine]:
+    text = content.decode()
+    return [
+        SourceLine(line=i, content=line, annotations={})
+        for i, line in enumerate(text.splitlines())
+    ]
+
+
+PARSERS: dict[str, typing.Callable[[bytes], list[SourceLine]]] = {
+    ".ipynb": parse_notebook,
+    ".py": parse_python,
+}
