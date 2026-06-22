@@ -4,6 +4,7 @@ import fastapi
 
 SOURCES = "sources"
 ANNOTATION_KEYS = "annotation_keys"
+LOGS = "logs"
 
 
 class MemoryCache:

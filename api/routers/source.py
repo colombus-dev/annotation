@@ -4,6 +4,7 @@ import uuid
 import fastapi
 import pydantic
 
+import api.service.activity_log
 import api.service.memory_cache
 import api.service.source_parser
 
@@ -67,6 +68,13 @@ async def post_source(
         "lines": lines,
     }
 
+    api.service.activity_log.record(
+        cache,
+        "source_uploaded",
+        source_id=source_id,
+        filename=file.filename,
+    )
+
     return scope[source_id]
 
 
@@ -108,5 +116,14 @@ def put_source_annotation(
 
     for i in range(body.start, body.end + 1):
         lines[i]["annotations"][body.annotation.key] = body.annotation.value
+
+    api.service.activity_log.record(
+        cache,
+        "annotation_updated",
+        source_id=source_id,
+        start=body.start,
+        end=body.end,
+        annotation=body.annotation.model_dump(),
+    )
 
     return scope[source_id]

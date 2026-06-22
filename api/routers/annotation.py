@@ -3,6 +3,7 @@ import enum
 import fastapi
 import pydantic
 
+import api.service.activity_log
 import api.service.memory_cache
 import api.service.source_parser
 
@@ -55,6 +56,14 @@ def post_key_value(
         )
     record = ValueRecord(name=body.name, creation_mode=CreationMode.MANUAL)
     scope[key][record.name] = record
+
+    api.service.activity_log.record(
+        cache,
+        "key_value_created",
+        key=key,
+        value=body.name,
+    )
+
     return record
 
 
