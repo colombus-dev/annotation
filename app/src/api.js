@@ -1,7 +1,17 @@
 const API_BASE = '/api'
 
-async function request(url, options) {
-  const response = await fetch(`${API_BASE}${url}`, options)
+function getSessionId() {
+  let id = localStorage.getItem('session-id')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('session-id', id)
+  }
+  return id
+}
+
+async function request(url, options = {}) {
+  const headers = { ...options.headers, 'X-Session-Id': getSessionId() }
+  const response = await fetch(`${API_BASE}${url}`, { ...options, headers })
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
     throw new Error(body.detail || response.statusText)

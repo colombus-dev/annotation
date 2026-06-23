@@ -6,6 +6,12 @@ SOURCES = "sources"
 ANNOTATION_KEYS = "annotation_keys"
 LOGS = "logs"
 
+SessionIdDep = typing.Annotated[str, fastapi.Header(alias="x-session-id")]
+
+
+def session_scope(base: str, session_id: str) -> str:
+    return f"{base}:{session_id}"
+
 
 class MemoryCache:
     def __init__(self) -> None:
