@@ -1,0 +1,48 @@
+.activity-log {
+  border-top: 1px solid #333;
+  background: #1a1a1a;
+  padding: 12px 16px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.activity-log h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.log-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #ccc;
+  background: #222;
+  border-radius: 3px;
+}
+
+.log-action {
+  font-weight: 600;
+  color: #7c9cff;
+  min-width: 140px;
+}
+
+.log-details {
+  flex: 1;
+  color: #aaa;
+}
+
+.log-time {
+  color: #666;
+  font-size: 11px;
+  white-space: nowrap;
+}
