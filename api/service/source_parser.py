@@ -13,6 +13,19 @@ class Step(enum.Enum):
     PREDICTION = "prediction"
 
 
+class AlgorithmFamily(enum.Enum):
+    LINEAR_MODELS = "linear-models"
+    DECISION_TREE = "decision-tree"
+    RANDOM_FOREST = "random-forest"
+    GRADIENT_BOOSTING = "gradient-boosting"
+    SVM = "svm"
+    KNN = "knn"
+    NAIVE_BAYES = "naive-bayes"
+    NEURAL_NETWORK = "neural-network"
+    CLUSTERING = "clustering"
+    DIMENSIONALITY_REDUCTION = "dimensionality-reduction"
+
+
 class SourceLine(typing.TypedDict):
     line: int
     content: str

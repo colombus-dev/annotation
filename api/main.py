@@ -1,6 +1,7 @@
 import contextlib
 
 import fastapi
+import fastapi.middleware.cors
 
 import api.routers.annotation
 import api.routers.log
@@ -24,6 +25,12 @@ def create_app() -> fastapi.FastAPI:
         title=settings.app_name,
         version=settings.app_version,
         lifespan=lifespan,
+    )
+    application.add_middleware(
+        fastapi.middleware.cors.CORSMiddleware,
+        allow_origins=["http://localhost:5173"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     application.include_router(api.routers.source.router)
     application.include_router(api.routers.annotation.router)

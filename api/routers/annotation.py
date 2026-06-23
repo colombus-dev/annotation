@@ -49,6 +49,11 @@ def post_key_value(
     scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
     if key not in scope:
         scope[key] = {}
+    if len(scope[key]) >= 10:
+        raise fastapi.HTTPException(
+            status_code=400,
+            detail=f"Maximum of 10 values per key reached",
+        )
     body.name = body.name.lower().replace(" ", "-")
     if body.name in scope[key]:
         raise fastapi.HTTPException(
@@ -68,12 +73,17 @@ def post_key_value(
     return record
 
 
+def _seed_key(scope, enum_cls):
+    key = enum_cls.__name__
+    key = key[0].lower() + key[1:]
+    key = "".join(f"-{c.lower()}" if c.isupper() else c for c in key)
+    scope[key] = {}
+    for member in enum_cls:
+        record = ValueRecord(name=member.value, creation_mode=CreationMode.AUTOMATIC)
+        scope[key][record.name] = record
+
+
 def initialize(cache: api.service.memory_cache.MemoryCache):
     scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
-    scope["step"] = {}
-    for default_step in api.service.source_parser.Step:
-        record = ValueRecord(
-            name=default_step.value,
-            creation_mode=CreationMode.AUTOMATIC,
-        )
-        scope["step"][record.name] = record
+    _seed_key(scope, api.service.source_parser.Step)
+    _seed_key(scope, api.service.source_parser.AlgorithmFamily)
