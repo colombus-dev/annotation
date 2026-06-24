@@ -43,7 +43,7 @@ def auth_google(body: GoogleAuthRequest):
 
     user = api.service.auth.get_user_by_email(info["email"])
     if not user:
-        raise fastapi.HTTPException(status_code=401, detail="Email not allowed")
+        raise fastapi.HTTPException(status_code=401, detail="Google auth failed")
 
     exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(
         hours=settings.jwt_expire_hours
