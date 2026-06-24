@@ -140,7 +140,7 @@ def put_source_annotation(
 
     for i in range(body.start, body.end + 1):
         if body.annotation.value is None:
-            lines[i]["annotations"].pop(body.annotation.key)
+            lines[i]["annotations"].pop(body.annotation.key, None)
         else:
             lines[i]["annotations"][body.annotation.key] = body.annotation.value
 
