@@ -39,7 +39,9 @@ def get_key_values(
         raise fastapi.HTTPException(
             status_code=404, detail=f"Unknown annotation key: '{key}'"
         )
-    return list(scope[key].values())
+    values = list(scope[key].values())
+    values = sorted(values, key=lambda v: v.name)
+    return values
 
 
 @router.post("/{key}", status_code=201)
