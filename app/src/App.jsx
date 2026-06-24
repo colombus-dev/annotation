@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { api } from './api'
+import { api, isAuthenticated, clearToken } from './api'
+import { Login } from './components/Login'
 import { FileUpload } from './components/FileUpload'
 import { SourceViewer } from './components/SourceViewer'
 import { AnnotationPanel } from './components/AnnotationPanel'
@@ -7,6 +8,7 @@ import { ActivityLog } from './components/ActivityLog'
 import './App.css'
 
 function App() {
+  const [authed, setAuthed] = useState(isAuthenticated())
   const [sources, setSources] = useState([])
   const [selectedSource, setSelectedSource] = useState(null)
   const [selection, setSelection] = useState({ start: 0, end: 0 })
@@ -17,8 +19,13 @@ function App() {
   const refresh = () => setRefreshCounter((c) => c + 1)
 
   useEffect(() => {
+    if (!authed) return
     api.getSources().then(setSources).catch(console.error)
-  }, [refreshCounter])
+  }, [refreshCounter, authed])
+
+  if (!authed) {
+    return <Login onLogin={() => setAuthed(true)} />
+  }
 
   async function handleSelectSource(sourceId) {
     const data = await api.getSource(sourceId)
@@ -38,11 +45,17 @@ function App() {
     refresh()
   }
 
+  function handleLogout() {
+    clearToken()
+    setAuthed(false)
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>Annotation</h1>
         <FileUpload onUploadSuccess={handleUploadSuccess} />
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </header>
       <div className="app-main">
         <aside className="sidebar">

@@ -4,6 +4,7 @@ import fastapi
 import fastapi.middleware.cors
 
 import api.routers.annotation
+import api.routers.auth
 import api.routers.log
 import api.routers.source
 import api.service.memory_cache
@@ -32,6 +33,7 @@ def create_app() -> fastapi.FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    application.include_router(api.routers.auth.router)
     application.include_router(api.routers.source.router)
     application.include_router(api.routers.annotation.router)
     application.include_router(api.routers.log.router)

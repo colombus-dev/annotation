@@ -4,6 +4,7 @@ import fastapi
 import pydantic
 
 import api.service.activity_log
+import api.service.auth
 import api.service.memory_cache
 import api.service.source_parser
 
@@ -49,7 +50,7 @@ def post_key_value(
     key: str,
     body: ValueCreate,
     cache: api.service.memory_cache.CacheDep,
-    session_id: api.service.memory_cache.SessionIdDep,
+    user: api.service.auth.UserDep,
 ) -> ValueRecord:
     scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
     if key not in scope:
@@ -70,7 +71,7 @@ def post_key_value(
 
     api.service.activity_log.record(
         cache,
-        session_id,
+        user.id,
         "key_value_created",
         key=key,
         value=body.name,

@@ -14,14 +14,12 @@ class LogEntry(pydantic.BaseModel):
 
 def record(
     cache: api.service.memory_cache.MemoryCache,
-    session_id: str,
+    user_id: int,
     action: str,
     **details: typing.Any,
 ):
     scope = cache.scope(
-        api.service.memory_cache.session_scope(
-            api.service.memory_cache.LOGS, session_id
-        )
+        api.service.memory_cache.user_scope(api.service.memory_cache.LOGS, str(user_id))
     )
     entry = LogEntry(
         timestamp=datetime.datetime.now(datetime.UTC).isoformat(),

@@ -5,6 +5,7 @@ import fastapi
 import pydantic
 
 import api.service.activity_log
+import api.service.auth
 import api.service.memory_cache
 import api.service.source_parser
 
@@ -48,7 +49,7 @@ def validate_annotation_value(
 async def post_source(
     file: fastapi.UploadFile,
     cache: api.service.memory_cache.CacheDep,
-    session_id: api.service.memory_cache.SessionIdDep,
+    user: api.service.auth.UserDep,
 ):
     suffix = pathlib.PurePath(file.filename or "").suffix
     parser = api.service.source_parser.PARSERS.get(suffix)
@@ -63,8 +64,8 @@ async def post_source(
 
     source_id = str(uuid.uuid4())
     scope = cache.scope(
-        api.service.memory_cache.session_scope(
-            api.service.memory_cache.SOURCES, session_id
+        api.service.memory_cache.user_scope(
+            api.service.memory_cache.SOURCES, str(user.id)
         )
     )
     scope[source_id] = {
@@ -74,11 +75,7 @@ async def post_source(
     }
 
     api.service.activity_log.record(
-        cache,
-        session_id,
-        "source_uploaded",
-        source_id=source_id,
-        filename=file.filename,
+        cache, user.id, "source_uploaded", source_id=source_id, filename=file.filename
     )
 
     return scope[source_id]
@@ -87,12 +84,12 @@ async def post_source(
 @router.get("", status_code=200)
 def get_sources(
     cache: api.service.memory_cache.CacheDep,
-    session_id: api.service.memory_cache.SessionIdDep,
+    user: api.service.auth.UserDep,
 ):
     return list(
         cache.scope(
-            api.service.memory_cache.session_scope(
-                api.service.memory_cache.SOURCES, session_id
+            api.service.memory_cache.user_scope(
+                api.service.memory_cache.SOURCES, str(user.id)
             )
         ).values()
     )
@@ -102,11 +99,11 @@ def get_sources(
 def get_source(
     source_id: str,
     cache: api.service.memory_cache.CacheDep,
-    session_id: api.service.memory_cache.SessionIdDep,
+    user: api.service.auth.UserDep,
 ):
     scope = cache.scope(
-        api.service.memory_cache.session_scope(
-            api.service.memory_cache.SOURCES, session_id
+        api.service.memory_cache.user_scope(
+            api.service.memory_cache.SOURCES, str(user.id)
         )
     )
     if source_id not in scope:
@@ -119,11 +116,11 @@ def put_source_annotation(
     source_id: str,
     body: AnnotationRequest,
     cache: api.service.memory_cache.CacheDep,
-    session_id: api.service.memory_cache.SessionIdDep,
+    user: api.service.auth.UserDep,
 ):
     scope = cache.scope(
-        api.service.memory_cache.session_scope(
-            api.service.memory_cache.SOURCES, session_id
+        api.service.memory_cache.user_scope(
+            api.service.memory_cache.SOURCES, str(user.id)
         )
     )
     if source_id not in scope:
@@ -144,7 +141,7 @@ def put_source_annotation(
 
     api.service.activity_log.record(
         cache,
-        session_id,
+        user.id,
         "annotation_updated",
         source_id=source_id,
         start=body.start,
