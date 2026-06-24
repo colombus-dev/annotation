@@ -82,7 +82,6 @@ function App() {
           onAnnotated={handleAnnotated}
         />
       </div>
-      <ActivityLog refreshTrigger={refreshCounter} />
     </div>
   )
 }
