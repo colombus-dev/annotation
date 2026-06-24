@@ -37,6 +37,12 @@ export function AnnotationPanel({
     api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
   }, [activeKey])
 
+  useEffect(() => {
+    if (keyValues.length > 0 && !selectedValue) {
+      setSelectedValue(keyValues[0].name)
+    }
+  }, [keyValues, selectedValue])
+
   async function handleAnnotate() {
     if (!source || !activeKey || !selectedValue) return
     setLoading(true)
@@ -83,24 +89,12 @@ export function AnnotationPanel({
       </div>
 
       <div className="field">
-        <label>Key</label>
-        <select
-          value="step"
-          disabled
-        >
-          <option value="step">step</option>
-        </select>
-      </div>
-
-      <div className="field">
-        <label>Value</label>
         <select
           value={selectedValue}
           onChange={(e) => setSelectedValue(e.target.value)}
           disabled={!activeKey}
         >
-          <option value="">Select value</option>
-          <option value="__CLEAR__">Deselect / Clear</option>
+          <option value="__CLEAR__">-- Clear --</option>
           {keyValues.map((v) => (
             <option key={v.name} value={v.name}>{v.name}</option>
           ))}
@@ -111,8 +105,9 @@ export function AnnotationPanel({
         className="annotate-btn"
         onClick={handleAnnotate}
         disabled={!activeKey || !selectedValue || loading}
+        style={selectedValue === '__CLEAR__' ? { background: '#ef4444', color: 'white' } : {}}
       >
-        {loading ? 'Applying...' : 'Annotate'}
+        {loading ? 'Applying...' : (selectedValue === '__CLEAR__' ? 'Remove' : 'Annotate')}
       </button>
 
       {error && <div className="panel-error">{error}</div>}
