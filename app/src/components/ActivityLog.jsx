@@ -15,14 +15,14 @@ export function ActivityLog({ refreshTrigger }) {
     <div className="activity-log">
       <h3>Activity Log</h3>
       <div className="log-list">
-        {[...logs].reverse().map((entry) => (
-          <div key={entry.id} className="log-entry">
+        {[...logs].reverse().map((entry, i) => (
+          <div key={i} className="log-entry">
             <span className="log-action">{entry.action}</span>
             <span className="log-details">
               {formatDetails(entry.action, entry.details)}
             </span>
             <span className="log-time">
-              {new Date(entry.timestamp).toLocaleTimeString()}
+              {new Date(entry.timestamp).toUTCString()}
             </span>
           </div>
         ))}

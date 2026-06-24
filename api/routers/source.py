@@ -5,6 +5,7 @@ import fastapi
 import pydantic
 
 import api.service.activity_log
+import api.service.auth
 import api.service.memory_cache
 import api.service.source_parser
 
@@ -50,6 +51,7 @@ def validate_annotation_value(
 async def post_source(
     file: fastapi.UploadFile,
     cache: api.service.memory_cache.CacheDep,
+    user: api.service.auth.UserDep,
 ):
     suffix = pathlib.PurePath(file.filename or "").suffix
     parser = api.service.source_parser.PARSERS.get(suffix)
@@ -63,7 +65,11 @@ async def post_source(
     lines = parser(content)
 
     source_id = str(uuid.uuid4())
-    scope = cache.scope(api.service.memory_cache.SOURCES)
+    scope = cache.scope(
+        api.service.memory_cache.user_scope(
+            api.service.memory_cache.SOURCES, str(user.id)
+        )
+    )
     scope[source_id] = {
         "id": source_id,
         "filename": file.filename,
@@ -71,26 +77,37 @@ async def post_source(
     }
 
     api.service.activity_log.record(
-        cache,
-        "source_uploaded",
-        source_id=source_id,
-        filename=file.filename,
+        cache, user.id, "source_uploaded", source_id=source_id, filename=file.filename
     )
 
     return scope[source_id]
 
 
 @router.get("", status_code=200)
-def get_sources(cache: api.service.memory_cache.CacheDep):
-    return list(cache.scope(api.service.memory_cache.SOURCES).values())
+def get_sources(
+    cache: api.service.memory_cache.CacheDep,
+    user: api.service.auth.UserDep,
+):
+    return list(
+        cache.scope(
+            api.service.memory_cache.user_scope(
+                api.service.memory_cache.SOURCES, str(user.id)
+            )
+        ).values()
+    )
 
 
 @router.get("/{source_id}", status_code=200)
 def get_source(
     source_id: str,
     cache: api.service.memory_cache.CacheDep,
+    user: api.service.auth.UserDep,
 ):
-    scope = cache.scope(api.service.memory_cache.SOURCES)
+    scope = cache.scope(
+        api.service.memory_cache.user_scope(
+            api.service.memory_cache.SOURCES, str(user.id)
+        )
+    )
     if source_id not in scope:
         raise fastapi.HTTPException(status_code=404, detail="Source not found")
     return scope[source_id]
@@ -101,8 +118,13 @@ def put_source_annotation(
     source_id: str,
     body: AnnotationRequest,
     cache: api.service.memory_cache.CacheDep,
+    user: api.service.auth.UserDep,
 ):
-    scope = cache.scope(api.service.memory_cache.SOURCES)
+    scope = cache.scope(
+        api.service.memory_cache.user_scope(
+            api.service.memory_cache.SOURCES, str(user.id)
+        )
+    )
     if source_id not in scope:
         raise fastapi.HTTPException(status_code=404, detail="Source not found")
 
@@ -118,12 +140,13 @@ def put_source_annotation(
 
     for i in range(body.start, body.end + 1):
         if body.annotation.value is None:
-            lines[i]["annotations"].pop(body.annotation.key)
+            lines[i]["annotations"].pop(body.annotation.key, None)
         else:
             lines[i]["annotations"][body.annotation.key] = body.annotation.value
 
     api.service.activity_log.record(
         cache,
+        user.id,
         "annotation_updated",
         source_id=source_id,
         start=body.start,

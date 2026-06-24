@@ -7,6 +7,10 @@ ANNOTATION_KEYS = "annotation_keys"
 LOGS = "logs"
 
 
+def user_scope(base: str, user_id: str) -> str:
+    return f"{base}:{user_id}"
+
+
 class MemoryCache:
     def __init__(self) -> None:
         self._store: dict[str, dict[str, typing.Any]] = {}

@@ -1,7 +1,33 @@
 const API_BASE = '/api'
 
-async function request(url, options) {
-  const response = await fetch(`${API_BASE}${url}`, options)
+function getToken() {
+  return localStorage.getItem('jwt_token')
+}
+
+export function setToken(token) {
+  localStorage.setItem('jwt_token', token)
+}
+
+export function clearToken() {
+  localStorage.removeItem('jwt_token')
+}
+
+export function isAuthenticated() {
+  return !!getToken()
+}
+
+async function request(url, options = {}) {
+  const token = getToken()
+  const headers = { ...options.headers }
+  if (token) {
+    headers['x-jwt-token'] = token
+  }
+  const response = await fetch(`${API_BASE}${url}`, { ...options, headers })
+  if (response.status === 401) {
+    clearToken()
+    window.location.reload()
+    throw new Error('Session expired')
+  }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
     throw new Error(body.detail || response.statusText)
@@ -10,6 +36,15 @@ async function request(url, options) {
 }
 
 export const api = {
+  getAuthConfig: () => request('/auth/config'),
+
+  authGoogle: (credential) =>
+    request('/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential }),
+    }),
+
   uploadSource: (file) => {
     const formData = new FormData()
     formData.append('file', file)

@@ -4,6 +4,7 @@ import fastapi
 import pydantic
 
 import api.service.activity_log
+import api.service.auth
 import api.service.memory_cache
 import api.service.source_parser
 
@@ -46,7 +47,10 @@ def get_key_values(
 
 @router.post("/{key}", status_code=201)
 def post_key_value(
-    key: str, body: ValueCreate, cache: api.service.memory_cache.CacheDep
+    key: str,
+    body: ValueCreate,
+    cache: api.service.memory_cache.CacheDep,
+    user: api.service.auth.UserDep,
 ) -> ValueRecord:
     scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
     if key not in scope:
@@ -67,6 +71,7 @@ def post_key_value(
 
     api.service.activity_log.record(
         cache,
+        user.id,
         "key_value_created",
         key=key,
         value=body.name,
