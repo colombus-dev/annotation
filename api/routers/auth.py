@@ -14,12 +14,16 @@ settings = api.settings.get()
 
 
 class AuthConfig(pydantic.BaseModel):
+    auth_required: bool
     google_client_id: str
 
 
 @router.get("/config")
 def get_auth_config() -> AuthConfig:
-    return AuthConfig(google_client_id=settings.google_client_id)
+    return AuthConfig(
+        auth_required=settings.is_environment_production(),
+        google_client_id=settings.google_client_id,
+    )
 
 
 class GoogleAuthRequest(pydantic.BaseModel):

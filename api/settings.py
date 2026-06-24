@@ -9,6 +9,7 @@ class Settings(pydantic_settings.BaseSettings):
 
     app_name: str = "Annotation"
     app_version: str = "0.1.0"
+    environment: str = pydantic.Field(default="production")
 
     google_client_id: str = pydantic.Field()
     jwt_secret: str = pydantic.Field(min_length=16)
@@ -17,6 +18,9 @@ class Settings(pydantic_settings.BaseSettings):
     jwt_header_field: str = "x-jwt-token"
 
     allowed_google_emails: str = pydantic.Field()
+
+    def is_environment_production(self) -> bool:
+        return self.environment == "production"
 
     @property
     def allowed_google_emails_list(self) -> list[str]:
