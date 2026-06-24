@@ -53,7 +53,7 @@ export function AnnotationPanel({
         selection.start,
         selection.end,
         activeKey,
-        selectedValue === '__CLEAR__' ? '' : selectedValue
+        selectedValue === '__CLEAR__' ? null : selectedValue
       )
       onAnnotated()
     } catch (err) {
