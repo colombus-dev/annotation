@@ -142,7 +142,7 @@ export function AnnotationPanel({
             </form>
           </div>
         ) : (
-          <button 
+          <button
             className="annotate-btn"
             style={{ marginTop: '12px', width: '100%', background: '#333' }}
             onClick={() => setIsAddingValue(true)}
