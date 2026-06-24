@@ -31,6 +31,8 @@ class AnnotationRequest(pydantic.BaseModel):
 def validate_annotation_value(
     annotation: Annotation, cache: api.service.memory_cache.MemoryCache
 ):
+    if annotation.value == "":
+        return
     scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
     if annotation.key not in scope:
         raise fastapi.HTTPException(
@@ -115,7 +117,10 @@ def put_source_annotation(
         )
 
     for i in range(body.start, body.end + 1):
-        lines[i]["annotations"][body.annotation.key] = body.annotation.value
+        if body.annotation.value == "":
+            lines[i]["annotations"].pop(body.annotation.key, None)
+        else:
+            lines[i]["annotations"][body.annotation.key] = body.annotation.value
 
     api.service.activity_log.record(
         cache,

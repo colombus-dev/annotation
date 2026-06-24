@@ -15,6 +15,7 @@ export function AnnotationPanel({
   const [keys, setKeys] = useState([])
   const [selectedValue, setSelectedValue] = useState('')
   const [newValue, setNewValue] = useState('')
+  const [isAddingValue, setIsAddingValue] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -23,10 +24,10 @@ export function AnnotationPanel({
   }, [])
 
   useEffect(() => {
-    if (keys.length > 0 && !activeKey) {
-      onKeyChange(keys[0])
+    if (!activeKey) {
+      onKeyChange('step')
     }
-  }, [keys])
+  }, [activeKey, onKeyChange])
 
   useEffect(() => {
     if (!activeKey) {
@@ -46,7 +47,7 @@ export function AnnotationPanel({
         selection.start,
         selection.end,
         activeKey,
-        selectedValue
+        selectedValue === '__CLEAR__' ? '' : selectedValue
       )
       onAnnotated()
     } catch (err) {
@@ -63,6 +64,7 @@ export function AnnotationPanel({
     try {
       await api.createKeyValue(activeKey, newValue.trim())
       setNewValue('')
+      setIsAddingValue(false)
       const updated = await api.getKeyValues(activeKey)
       onValuesChange(updated)
     } catch (err) {
@@ -83,16 +85,10 @@ export function AnnotationPanel({
       <div className="field">
         <label>Key</label>
         <select
-          value={activeKey}
-          onChange={(e) => {
-            onKeyChange(e.target.value)
-            setSelectedValue('')
-          }}
+          value="step"
+          disabled
         >
-          <option value="">Select key</option>
-          {keys.map((k) => (
-            <option key={k} value={k}>{k}</option>
-          ))}
+          <option value="step">step</option>
         </select>
       </div>
 
@@ -104,6 +100,7 @@ export function AnnotationPanel({
           disabled={!activeKey}
         >
           <option value="">Select value</option>
+          <option value="__CLEAR__">Deselect / Clear</option>
           {keyValues.map((v) => (
             <option key={v.name} value={v.name}>{v.name}</option>
           ))}
@@ -120,18 +117,6 @@ export function AnnotationPanel({
 
       {error && <div className="panel-error">{error}</div>}
 
-      <div className="add-value">
-        <form onSubmit={handleAddValue}>
-          <input
-            type="text"
-            placeholder="New value..."
-            value={newValue}
-            onChange={(e) => setNewValue(e.target.value)}
-          />
-          <button type="submit" disabled={!newValue.trim()}>Add</button>
-        </form>
-      </div>
-
       <div className="legend">
         <h4>Legend</h4>
         {keyValues.map((v, i) => (
@@ -143,6 +128,29 @@ export function AnnotationPanel({
             <span>{v.name}</span>
           </div>
         ))}
+        {isAddingValue ? (
+          <div className="add-value" style={{ borderTop: 'none', paddingTop: '8px' }}>
+            <form onSubmit={handleAddValue}>
+              <input
+                type="text"
+                placeholder="New value..."
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                autoFocus
+              />
+              <button type="submit" disabled={!newValue.trim()}>Add</button>
+            </form>
+          </div>
+        ) : (
+          <button 
+            className="annotate-btn"
+            style={{ marginTop: '12px', width: '100%', background: '#333' }}
+            onClick={() => setIsAddingValue(true)}
+            disabled={!activeKey}
+          >
+            Add Step
+          </button>
+        )}
       </div>
     </div>
   )
