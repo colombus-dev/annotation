@@ -1,0 +1,29 @@
+services:
+  annotate_app:
+    image: ghcr.io/colombus-dev/annotation-app:latest
+    restart: unless-stopped
+    networks:
+      - colombus-net
+
+  annotate_api:
+    image: ghcr.io/colombus-dev/annotation-api:latest
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      ROOT_PATH: /annotate
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      JWT_SECRET: ${JWT_SECRET}
+      ALLOWED_GOOGLE_EMAILS: ${ALLOWED_GOOGLE_EMAILS}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8181/api/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - colombus-net
+
+networks:
+  colombus-net:
+    external: true
+    name: colombus-net
