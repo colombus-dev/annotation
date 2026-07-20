@@ -1,0 +1,57 @@
+services:
+  annotate_app:
+    build: ./app
+    ports:
+      - "5173:5173"
+    networks:
+      - colombus-dev_network
+    volumes:
+      - ./app/:/app:rw
+      - app_node_modules:/app/node_modules
+    environment:
+      VITE_PROXY_TARGET: http://annotate_api:8181
+    depends_on:
+      - annotate_api
+
+  annotate_api:
+    build: .
+    ports:
+      - "8181:8181"
+    networks:
+      - colombus-dev_network
+    volumes:
+      - ./api:/annotation/api:rw
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      ALLOWED_GOOGLE_EMAILS: ${ALLOWED_GOOGLE_EMAILS}
+      REDIS_URL: redis://annotate_redis:6379/0
+    depends_on:
+      annotate_redis:
+        condition: service_healthy
+
+  annotate_redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    networks:
+      - colombus-dev_network
+    volumes:
+      - annotate_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  colombus-dev_network:
+    external: true
+    name: colombus-dev_network
+
+volumes:
+  annotate_redis_data:
+  app_node_modules:

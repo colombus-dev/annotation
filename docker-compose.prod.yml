@@ -12,8 +12,12 @@ services:
       ENVIRONMENT: production
       ROOT_PATH: /annotate
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      JWT_SECRET: ${JWT_SECRET}
       ALLOWED_GOOGLE_EMAILS: ${ALLOWED_GOOGLE_EMAILS}
+      JWT_SECRET: ${JWT_SECRET}
+      REDIS_URL: redis://annotate_redis:6379/0
+    depends_on:
+      annotate_redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8181/api/ping"]
       interval: 30s
@@ -22,6 +26,24 @@ services:
       start_period: 10s
     networks:
       - colombus-net
+
+  annotate_redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - annotate_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - colombus-net
+
+volumes:
+  annotate_redis_data:
 
 networks:
   colombus-net:

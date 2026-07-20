@@ -12,6 +12,8 @@ class Settings(pydantic_settings.BaseSettings):
     environment: str = pydantic.Field(default="production")
     root_path: str = ""
 
+    redis_url: str = "redis://localhost:6379/0"
+
     google_client_id: str = pydantic.Field()
     jwt_secret: str = pydantic.Field(min_length=16)
     jwt_algorithm: str = "HS256"

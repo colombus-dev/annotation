@@ -1,24 +1,16 @@
-import enum
+import re
 
 import fastapi
 import pydantic
 
 import api.service.activity_log
+import api.service.annotation_definitions
 import api.service.auth
-import api.service.memory_cache
-import api.service.source_parser
+import api.service.store
 
 router = fastapi.APIRouter(prefix="/api/annotation/keys", tags=["annotation-keys"])
 
-
-class CreationMode(str, enum.Enum):
-    MANUAL = "manual"
-    AUTOMATIC = "automatic"
-
-
-class ValueRecord(pydantic.BaseModel):
-    name: str
-    creation_mode: CreationMode
+ANNOTATION_KEY_PATTERN = re.compile(r"[a-z0-9-]+")
 
 
 class ValueCreate(pydantic.BaseModel):
@@ -26,51 +18,66 @@ class ValueCreate(pydantic.BaseModel):
 
 
 @router.get("", status_code=200)
-def get_keys(cache: api.service.memory_cache.CacheDep) -> list[str]:
-    scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
-    return list(scope.keys())
+async def get_keys(store: api.service.store.StoreDep) -> list[str]:
+    definitions = await api.service.annotation_definitions.get(store)
+    return list(definitions.keys())
 
 
 @router.get("/{key}", status_code=200)
-def get_key_values(
-    key: str, cache: api.service.memory_cache.CacheDep
-) -> list[ValueRecord]:
-    scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
-    if key not in scope:
+async def get_key_values(
+    key: str, store: api.service.store.StoreDep
+) -> list[api.service.annotation_definitions.ValueRecord]:
+    definitions = await api.service.annotation_definitions.get(store)
+    if key not in definitions:
         raise fastapi.HTTPException(
             status_code=404, detail=f"Unknown annotation key: '{key}'"
         )
-    values = list(scope[key].values())
-    values = sorted(values, key=lambda v: v.name)
+    values = [
+        api.service.annotation_definitions.ValueRecord(**value)
+        for value in definitions[key].values()
+    ]
+    values.sort(key=lambda v: v.name)
     return values
 
 
 @router.post("/{key}", status_code=201)
-def post_key_value(
+async def post_key_value(
     key: str,
     body: ValueCreate,
-    cache: api.service.memory_cache.CacheDep,
+    store: api.service.store.StoreDep,
     user: api.service.auth.UserDep,
-) -> ValueRecord:
-    scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
-    if key not in scope:
-        scope[key] = {}
-    if len(scope[key]) >= 10:
+) -> api.service.annotation_definitions.ValueRecord:
+    if not ANNOTATION_KEY_PATTERN.fullmatch(key):
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail="Annotation key must be lowercase letters, digits and hyphens",
+        )
+
+    definitions = await api.service.annotation_definitions.get(store)
+    if key not in definitions:
+        definitions[key] = {}
+    if len(definitions[key]) >= 10:
         raise fastapi.HTTPException(
             status_code=400,
             detail=f"Maximum of 10 values per key reached",
         )
     body.name = body.name.lower().replace(" ", "-")
-    if body.name in scope[key]:
+    if body.name in definitions[key]:
         raise fastapi.HTTPException(
             status_code=400,
             detail=f"Value '{body.name}' already exists for key '{key}'",
         )
-    record = ValueRecord(name=body.name, creation_mode=CreationMode.MANUAL)
-    scope[key][record.name] = record
+    record = api.service.annotation_definitions.ValueRecord(
+        name=body.name,
+        creation_mode=api.service.annotation_definitions.CreationMode.MANUAL,
+    )
+    definitions[key][record.name] = record.model_dump()
+    await store.set_document(
+        api.service.store.annotation_definitions_key(), definitions
+    )
 
-    api.service.activity_log.record(
-        cache,
+    await api.service.activity_log.record(
+        store,
         user.id,
         "key_value_created",
         key=key,
@@ -78,19 +85,3 @@ def post_key_value(
     )
 
     return record
-
-
-def _seed_key(scope, enum_cls):
-    key = enum_cls.__name__
-    key = key[0].lower() + key[1:]
-    key = "".join(f"-{c.lower()}" if c.isupper() else c for c in key)
-    scope[key] = {}
-    for member in enum_cls:
-        record = ValueRecord(name=member.value, creation_mode=CreationMode.AUTOMATIC)
-        scope[key][record.name] = record
-
-
-def initialize(cache: api.service.memory_cache.MemoryCache):
-    scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
-    _seed_key(scope, api.service.source_parser.Step)
-    _seed_key(scope, api.service.source_parser.AlgorithmFamily)

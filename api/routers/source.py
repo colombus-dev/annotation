@@ -5,9 +5,10 @@ import fastapi
 import pydantic
 
 import api.service.activity_log
+import api.service.annotation_definitions
 import api.service.auth
-import api.service.memory_cache
 import api.service.source_parser
+import api.service.store
 
 router = fastapi.routing.APIRouter(prefix="/api/source", tags=["source"])
 
@@ -29,28 +30,28 @@ class AnnotationRequest(pydantic.BaseModel):
         return self
 
 
-def validate_annotation_value(
-    annotation: Annotation, cache: api.service.memory_cache.MemoryCache
+async def validate_annotation_value(
+    annotation: Annotation, store: api.service.store.Store
 ):
     if annotation.value is None:
         return
-    scope = cache.scope(api.service.memory_cache.ANNOTATION_KEYS)
-    if annotation.key not in scope:
+    definitions = await api.service.annotation_definitions.get(store)
+    if annotation.key not in definitions:
         raise fastapi.HTTPException(
             status_code=422,
-            detail=f"Unknown annotation key: '{annotation.key}', expected: {list(scope.keys())}",
+            detail=f"Unknown annotation key: '{annotation.key}', expected: {list(definitions.keys())}",
         )
-    if annotation.value not in scope[annotation.key]:
+    if annotation.value not in definitions[annotation.key]:
         raise fastapi.HTTPException(
             status_code=422,
-            detail=f"Unknown value '{annotation.value}' for key '{annotation.key}', expected: {list(scope[annotation.key].keys())}",
+            detail=f"Unknown value '{annotation.value}' for key '{annotation.key}', expected: {list(definitions[annotation.key].keys())}",
         )
 
 
 @router.post("", status_code=201)
 async def post_source(
     file: fastapi.UploadFile,
-    cache: api.service.memory_cache.CacheDep,
+    store: api.service.store.StoreDep,
     user: api.service.auth.UserDep,
 ):
     suffix = pathlib.PurePath(file.filename or "").suffix
@@ -65,87 +66,80 @@ async def post_source(
     lines = parser(content)
 
     source_id = str(uuid.uuid4())
-    scope = cache.scope(
-        api.service.memory_cache.user_scope(
-            api.service.memory_cache.SOURCES, str(user.id)
-        )
-    )
-    scope[source_id] = {
+    user_id = str(user.id)
+    source = {
         "id": source_id,
         "filename": file.filename,
         "lines": lines,
     }
 
-    api.service.activity_log.record(
-        cache, user.id, "source_uploaded", source_id=source_id, filename=file.filename
+    await store.set_document(api.service.store.source_key(user_id, source_id), source)
+
+    await api.service.activity_log.record(
+        store, user.id, "source_uploaded", source_id=source_id, filename=file.filename
     )
 
-    return scope[source_id]
+    return source
 
 
 @router.get("", status_code=200)
-def get_sources(
-    cache: api.service.memory_cache.CacheDep,
+async def get_sources(
+    store: api.service.store.StoreDep,
     user: api.service.auth.UserDep,
 ):
-    return list(
-        cache.scope(
-            api.service.memory_cache.user_scope(
-                api.service.memory_cache.SOURCES, str(user.id)
-            )
-        ).values()
-    )
+    user_id = str(user.id)
+    return await store.find_documents(api.service.store.source_key_pattern(user_id))
 
 
 @router.get("/{source_id}", status_code=200)
-def get_source(
+async def get_source(
     source_id: str,
-    cache: api.service.memory_cache.CacheDep,
+    store: api.service.store.StoreDep,
     user: api.service.auth.UserDep,
 ):
-    scope = cache.scope(
-        api.service.memory_cache.user_scope(
-            api.service.memory_cache.SOURCES, str(user.id)
-        )
+    source = await store.get_document(
+        api.service.store.source_key(str(user.id), source_id)
     )
-    if source_id not in scope:
+    if source is None:
         raise fastapi.HTTPException(status_code=404, detail="Source not found")
-    return scope[source_id]
+    return source
 
 
 @router.put("/{source_id}/annotation", status_code=200)
-def put_source_annotation(
+async def put_source_annotation(
     source_id: str,
     body: AnnotationRequest,
-    cache: api.service.memory_cache.CacheDep,
+    store: api.service.store.StoreDep,
     user: api.service.auth.UserDep,
 ):
-    scope = cache.scope(
-        api.service.memory_cache.user_scope(
-            api.service.memory_cache.SOURCES, str(user.id)
-        )
-    )
-    if source_id not in scope:
+    user_id = str(user.id)
+    key = api.service.store.source_key(user_id, source_id)
+
+    if not await store.exists(key):
         raise fastapi.HTTPException(status_code=404, detail="Source not found")
 
-    validate_annotation_value(body.annotation, cache)
+    await validate_annotation_value(body.annotation, store)
 
-    lines = scope[source_id]["lines"]
-
-    if body.end >= len(lines):
+    line_count = await store.get_array_length(key, "$.lines")
+    if body.end >= line_count:
         raise fastapi.HTTPException(
             status_code=422,
-            detail=f"end={body.end} is out of range, source has {len(lines)} lines (0-{len(lines) - 1})",
+            detail=f"end={body.end} is out of range, source has {line_count} lines (0-{line_count - 1})",
         )
 
-    for i in range(body.start, body.end + 1):
-        if body.annotation.value is None:
-            lines[i]["annotations"].pop(body.annotation.key, None)
-        else:
-            lines[i]["annotations"][body.annotation.key] = body.annotation.value
+    paths = [
+        f"$.lines[{i}].annotations.{body.annotation.key}"
+        for i in range(body.start, body.end + 1)
+    ]
+    if body.annotation.value is None:
+        await store.delete_document_paths(key, paths)
+    else:
+        await store.set_document_paths(
+            key, {path: body.annotation.value for path in paths}
+        )
 
-    api.service.activity_log.record(
-        cache,
+    await api.service.activity_log.record(
+        store,
         user.id,
         "annotation_updated",
         source_id=source_id,
@@ -154,4 +148,4 @@ def put_source_annotation(
         annotation=body.annotation.model_dump(),
     )
 
-    return scope[source_id]
+    return await store.get_document(key)

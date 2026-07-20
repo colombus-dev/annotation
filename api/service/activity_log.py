@@ -1,29 +1,43 @@
 import datetime
+import json
 import typing
 
 import pydantic
 
-import api.service.memory_cache
+import api.service.store
 
 
 class LogEntry(pydantic.BaseModel):
+    id: str
     timestamp: str
     action: str
     details: dict[str, typing.Any]
 
 
-def record(
-    cache: api.service.memory_cache.MemoryCache,
+async def record(
+    store: api.service.store.Store,
     user_id: int,
     action: str,
     **details: typing.Any,
-):
-    scope = cache.scope(
-        api.service.memory_cache.user_scope(api.service.memory_cache.LOGS, str(user_id))
+) -> None:
+    await store.append_to_stream(
+        api.service.store.user_logs_key(str(user_id)),
+        {
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+            "action": action,
+            "details": json.dumps(details),
+        },
     )
-    entry = LogEntry(
-        timestamp=datetime.datetime.now(datetime.UTC).isoformat(),
-        action=action,
-        details=details,
-    )
-    scope[str(len(scope))] = entry
+
+
+async def list_entries(store: api.service.store.Store, user_id: int) -> list[LogEntry]:
+    entries = await store.read_stream(api.service.store.user_logs_key(str(user_id)))
+    return [
+        LogEntry(
+            id=entry_id,
+            timestamp=fields["timestamp"],
+            action=fields["action"],
+            details=json.loads(fields["details"]),
+        )
+        for entry_id, fields in entries
+    ]
