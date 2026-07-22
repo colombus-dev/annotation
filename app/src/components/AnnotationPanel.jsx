@@ -3,6 +3,8 @@ import { api } from '../api'
 import { PALETTE } from '../colors'
 import './AnnotationPanel.css'
 
+const NO_ANNOTATION = '__NONE__'
+
 export function AnnotationPanel({
   source,
   selection,
@@ -53,7 +55,7 @@ export function AnnotationPanel({
         selection.start,
         selection.end,
         activeKey,
-        selectedValue === '__CLEAR__' ? null : selectedValue
+        selectedValue === NO_ANNOTATION ? null : selectedValue
       )
       onAnnotated()
     } catch (err) {
@@ -84,17 +86,25 @@ export function AnnotationPanel({
     <div className="annotation-panel">
       <h3>Annotate</h3>
 
-      <div className="selection-info">
-        <span>Lines {selection.start + 1} – {selection.end + 1}</span>
+      <div className="field">
+        <label>Selected lines</label>
+        <span className="selection-info-value">
+          {selection.start === selection.end
+            ? `Line ${selection.start + 1}`
+            : `Lines ${selection.start + 1}–${selection.end + 1} (${
+                selection.end - selection.start + 1
+              } lines)`}
+        </span>
       </div>
 
       <div className="field">
+        <label>Value</label>
         <select
           value={selectedValue}
           onChange={(e) => setSelectedValue(e.target.value)}
           disabled={!activeKey}
         >
-          <option value="__CLEAR__">-- Clear --</option>
+          <option value={NO_ANNOTATION}>No annotation</option>
           {keyValues.map((v) => (
             <option key={v.name} value={v.name}>{v.name}</option>
           ))}
@@ -105,9 +115,9 @@ export function AnnotationPanel({
         className="annotate-btn"
         onClick={handleAnnotate}
         disabled={!activeKey || !selectedValue || loading}
-        style={selectedValue === '__CLEAR__' ? { background: '#ef4444', color: 'white' } : {}}
+        style={selectedValue === NO_ANNOTATION ? { background: '#ef4444', color: 'white' } : {}}
       >
-        {loading ? 'Applying...' : (selectedValue === '__CLEAR__' ? 'Remove' : 'Annotate')}
+        {loading ? 'Applying…' : (selectedValue === NO_ANNOTATION ? 'Clear annotation' : 'Annotate selected lines')}
       </button>
 
       {error && <div className="panel-error">{error}</div>}

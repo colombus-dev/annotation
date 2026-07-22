@@ -15,12 +15,10 @@
   font-size: 14px;
 }
 
-.selection-info {
-  padding: 8px;
-  background: #2a2a2a;
-  border-radius: 4px;
+.selection-info-value {
   font-size: 13px;
-  color: #aaa;
+  color: #e0e0e0;
+  font-weight: 600;
 }
 
 .field {
