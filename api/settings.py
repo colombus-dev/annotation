@@ -17,7 +17,7 @@ class Settings(pydantic_settings.BaseSettings):
     google_client_id: str = pydantic.Field()
     jwt_secret: str = pydantic.Field(min_length=16)
     jwt_algorithm: str = "HS256"
-    jwt_expire_hours: int = 1
+    jwt_expire_hours: int = 8
     jwt_header_field: str = "x-jwt-token"
 
     allowed_google_emails: str = pydantic.Field()
