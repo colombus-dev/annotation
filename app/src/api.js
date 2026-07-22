@@ -1,5 +1,4 @@
-const basePath = window.location.pathname.replace(/\/+$/, '')
-const API_BASE = `${basePath}/api`
+const API_BASE = '/api'
 
 function getToken() {
   return localStorage.getItem('jwt_token')
