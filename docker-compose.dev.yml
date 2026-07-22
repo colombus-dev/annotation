@@ -2,7 +2,7 @@ services:
   annotate_app:
     build: ./app
     ports:
-      - "5173:5173"
+      - "5174:5174"
     networks:
       - colombus-dev_network
     volumes:

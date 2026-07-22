@@ -9,6 +9,9 @@ RUN --mount=type=cache,target=/root/.cache/npm \
 
 COPY . .
 
+ARG VITE_BASE_PATH=/annotate/
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
+
 RUN npm run build
 
 FROM nginx:stable-alpine

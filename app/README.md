@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-The dev server runs on `http://localhost:5173` and proxies API requests to `http://localhost:8000`.
+The dev server runs on `http://localhost:5174` and proxies API requests to `http://localhost:8000`.
 
 ## Features
 
