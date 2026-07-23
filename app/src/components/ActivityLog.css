@@ -1,16 +1,6 @@
-.activity-log {
-  border-top: 1px solid #333;
-  background: #1a1a1a;
-  padding: 12px 16px;
-  max-height: 180px;
-  overflow-y: auto;
-}
-
-.activity-log h3 {
-  margin: 0 0 8px;
+.activity-log-empty {
+  color: #666;
   font-size: 13px;
-  color: #888;
-  text-transform: uppercase;
 }
 
 .log-list {

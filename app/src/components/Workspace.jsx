@@ -4,6 +4,7 @@ import { api } from '../api'
 import { FileUpload } from './FileUpload'
 import { SourceViewer } from './SourceViewer'
 import { AnnotationPanel } from './AnnotationPanel'
+import { ActivityLog } from './ActivityLog'
 
 export function Workspace({ authRequired, onLogout }) {
   const { sourceId } = useParams()
@@ -15,6 +16,7 @@ export function Workspace({ authRequired, onLogout }) {
   const [activeKey, setActiveKey] = useState('')
   const [keyValues, setKeyValues] = useState([])
   const [refreshCounter, setRefreshCounter] = useState(0)
+  const [showActivityLog, setShowActivityLog] = useState(false)
 
   const refresh = () => setRefreshCounter((c) => c + 1)
 
@@ -77,10 +79,38 @@ export function Workspace({ authRequired, onLogout }) {
       <header className="app-header">
         <h1>Annotation</h1>
         <FileUpload onUploadSuccess={handleUploadSuccess} />
+        <button
+          className="activity-log-btn"
+          onClick={() => setShowActivityLog(true)}
+        >
+          Activity Log
+        </button>
         {authRequired && (
           <button className="logout-btn" onClick={onLogout}>Logout</button>
         )}
       </header>
+      {showActivityLog && (
+        <div
+          className="drawer-overlay"
+          onClick={() => setShowActivityLog(false)}
+        >
+          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header">
+              <h2>Activity Log</h2>
+              <button
+                className="drawer-close"
+                aria-label="Close"
+                onClick={() => setShowActivityLog(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="drawer-body">
+              <ActivityLog refreshTrigger={refreshCounter} />
+            </div>
+          </div>
+        </div>
+      )}
       <div className="app-main">
         <aside className="sidebar">
           <h2>Sources</h2>

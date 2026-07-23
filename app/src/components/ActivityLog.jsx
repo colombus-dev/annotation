@@ -9,24 +9,23 @@ export function ActivityLog({ refreshTrigger }) {
     api.getLogs().then(setLogs).catch(console.error)
   }, [refreshTrigger])
 
-  if (logs.length === 0) return null
+  if (logs.length === 0) {
+    return <p className="activity-log-empty">No activity yet</p>
+  }
 
   return (
-    <div className="activity-log">
-      <h3>Activity Log</h3>
-      <div className="log-list">
-        {[...logs].reverse().map((entry, i) => (
-          <div key={i} className="log-entry">
-            <span className="log-action">{entry.action}</span>
-            <span className="log-details">
-              {formatDetails(entry.action, entry.details)}
-            </span>
-            <span className="log-time">
-              {new Date(entry.timestamp).toUTCString()}
-            </span>
-          </div>
-        ))}
-      </div>
+    <div className="log-list">
+      {[...logs].reverse().map((entry, i) => (
+        <div key={i} className="log-entry">
+          <span className="log-action">{entry.action}</span>
+          <span className="log-details">
+            {formatDetails(entry.action, entry.details)}
+          </span>
+          <span className="log-time">
+            {new Date(entry.timestamp).toUTCString()}
+          </span>
+        </div>
+      ))}
     </div>
   )
 }
