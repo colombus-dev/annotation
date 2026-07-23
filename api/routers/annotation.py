@@ -10,7 +10,7 @@ import api.service.store
 
 router = fastapi.APIRouter(prefix="/api/annotation/keys", tags=["annotation-keys"])
 
-ANNOTATION_KEY_PATTERN = re.compile(r"[a-z0-9-]+")
+ANNOTATION_PATTERN = re.compile(r"[a-z0-9-]+")
 
 
 class ValueCreate(pydantic.BaseModel):
@@ -47,7 +47,7 @@ async def post_key_value(
     store: api.service.store.StoreDep,
     user: api.service.auth.UserDep,
 ) -> api.service.annotation_definitions.ValueRecord:
-    if not ANNOTATION_KEY_PATTERN.fullmatch(key):
+    if not ANNOTATION_PATTERN.fullmatch(key):
         raise fastapi.HTTPException(
             status_code=422,
             detail="Annotation key must be lowercase letters, digits and hyphens",
@@ -62,6 +62,11 @@ async def post_key_value(
             detail=f"Maximum of 10 values per key reached",
         )
     body.name = body.name.lower().replace(" ", "-")
+    if not ANNOTATION_PATTERN.fullmatch(body.name):
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail="Annotation value must be lowercase letters, digits and hyphens",
+        )
     if body.name in definitions[key]:
         raise fastapi.HTTPException(
             status_code=400,
