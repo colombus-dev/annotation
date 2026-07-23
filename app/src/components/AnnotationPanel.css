@@ -130,4 +130,30 @@
   height: 14px;
   border-radius: 3px;
   border: 1px solid #555;
+  flex: none;
+}
+
+.legend-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delete-value-btn {
+  flex: none;
+  padding: 0 4px;
+  background: transparent;
+  border: none;
+  color: #777;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.delete-value-btn:hover {
+  background: #4a2222;
+  color: #ff6b6b;
 }

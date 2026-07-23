@@ -65,6 +65,21 @@ export function AnnotationPanel({
     }
   }
 
+  async function handleDeleteValue(value) {
+    if (!activeKey) return
+    if (!window.confirm(`Delete value "${value}"?`)) return
+
+    setError(null)
+    try {
+      await api.deleteKeyValue(activeKey, value)
+      const updated = await api.getKeyValues(activeKey)
+      onValuesChange(updated)
+      if (selectedValue === value) setSelectedValue('')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   async function handleAddValue(e) {
     e.preventDefault()
     if (!activeKey || !newValue.trim()) return
@@ -130,7 +145,17 @@ export function AnnotationPanel({
               className="legend-color"
               style={{ background: PALETTE[i] || '#6b728040' }}
             />
-            <span>{v.name}</span>
+            <span className="legend-name">{v.name}</span>
+            {v.creation_mode === 'manual' && (
+              <button
+                className="delete-value-btn"
+                title="Delete value"
+                aria-label={`Delete ${v.name}`}
+                onClick={() => handleDeleteValue(v.name)}
+              >
+                &times;
+              </button>
+            )}
           </div>
         ))}
         {isAddingValue ? (

@@ -85,3 +85,40 @@ async def post_key_value(
     )
 
     return record
+
+
+@router.delete("/{key}/{value}", status_code=204)
+async def delete_key_value(
+    key: str,
+    value: str,
+    store: api.service.store.StoreDep,
+    user: api.service.auth.UserDep,
+):
+    definitions = await api.service.annotation_definitions.get(store)
+    if key not in definitions:
+        raise fastapi.HTTPException(
+            status_code=404, detail=f"Unknown annotation key: '{key}'"
+        )
+    if value not in definitions[key]:
+        raise fastapi.HTTPException(
+            status_code=404, detail=f"Unknown value '{value}' for key '{key}'"
+        )
+
+    record = api.service.annotation_definitions.ValueRecord(**definitions[key][value])
+    if record.creation_mode != api.service.annotation_definitions.CreationMode.MANUAL:
+        raise fastapi.HTTPException(
+            status_code=400,
+            detail=f"Cannot delete automatically created value '{value}'",
+        )
+
+    await store.delete_document_paths(
+        api.service.store.annotation_definitions_key(), [f"$.{key}.{value}"]
+    )
+
+    await api.service.activity_log.record(
+        store,
+        user.id,
+        "key_value_deleted",
+        key=key,
+        value=value,
+    )

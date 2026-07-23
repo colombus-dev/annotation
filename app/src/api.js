@@ -78,5 +78,8 @@ export const api = {
       body: JSON.stringify({ name }),
     }),
 
+  deleteKeyValue: (key, value) =>
+    request(`/annotation/keys/${key}/${value}`, { method: 'DELETE' }),
+
   getLogs: () => request('/logs'),
 }
