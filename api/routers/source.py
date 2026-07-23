@@ -105,6 +105,25 @@ async def get_source(
     return source
 
 
+@router.delete("/{source_id}", status_code=204)
+async def delete_source(
+    source_id: str,
+    store: api.service.store.StoreDep,
+    user: api.service.auth.UserDep,
+):
+    user_id = str(user.id)
+    key = api.service.store.source_key(user_id, source_id)
+
+    if not await store.exists(key):
+        raise fastapi.HTTPException(status_code=404, detail="Source not found")
+
+    await store.delete_document(key)
+
+    await api.service.activity_log.record(
+        store, user.id, "source_deleted", source_id=source_id
+    )
+
+
 @router.put("/{source_id}/annotation", status_code=200)
 async def put_source_annotation(
     source_id: str,

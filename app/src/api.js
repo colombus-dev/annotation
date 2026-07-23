@@ -32,6 +32,9 @@ async function request(url, options = {}) {
     const body = await response.json().catch(() => ({}))
     throw new Error(body.detail || response.statusText)
   }
+  if (response.status === 204) {
+    return null
+  }
   return response.json()
 }
 
@@ -54,6 +57,8 @@ export const api = {
   getSources: () => request('/source'),
 
   getSource: (sourceId) => request(`/source/${sourceId}`),
+
+  deleteSource: (sourceId) => request(`/source/${sourceId}`, { method: 'DELETE' }),
 
   annotateSource: (sourceId, start, end, key, value) =>
     request(`/source/${sourceId}/annotation`, {

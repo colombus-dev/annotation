@@ -54,6 +54,17 @@ export function Workspace({ authRequired, onLogout }) {
     navigate(`/source/${result.id}`)
   }
 
+  async function handleDeleteSource(e, id) {
+    e.stopPropagation()
+    if (!window.confirm('Delete this source?')) return
+
+    await api.deleteSource(id)
+    if (selectedSource?.id === id) {
+      navigate('/', { replace: true })
+    }
+    refresh()
+  }
+
   async function handleAnnotated() {
     if (!selectedSource) return
     const updated = await api.getSource(selectedSource.id)
@@ -78,12 +89,20 @@ export function Workspace({ authRequired, onLogout }) {
           ) : (
             <ul>
               {sources.map((s) => (
-                <li key={s.id}>
+                <li key={s.id} className="source-item">
                   <button
                     className={selectedSource?.id === s.id ? 'active' : ''}
                     onClick={() => handleSelectSource(s.id)}
                   >
                     {s.filename}
+                  </button>
+                  <button
+                    className="delete-source-btn"
+                    title="Delete source"
+                    aria-label={`Delete ${s.filename}`}
+                    onClick={(e) => handleDeleteSource(e, s.id)}
+                  >
+                    &times;
                   </button>
                 </li>
               ))}

@@ -69,6 +69,9 @@ class Store:
     async def set_document(self, key: str, value: dict) -> None:
         await self._client.json().set(key, "$", value)
 
+    async def delete_document(self, key: str) -> None:
+        await self._client.json().delete(key)
+
     async def scan_keys(self, match: str) -> list[str]:
         return [key async for key in self._client.scan_iter(match=match)]
 
