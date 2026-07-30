@@ -14,6 +14,7 @@ class CreationMode(str, enum.Enum):
 class ValueRecord(pydantic.BaseModel):
     name: str
     creation_mode: CreationMode
+    order: int = 0
 
 
 async def get(store: api.service.store.Store) -> dict:
@@ -30,8 +31,10 @@ def _create_key(definitions: dict, enum_cls: type[enum.Enum]) -> None:
     key = key[0].lower() + key[1:]
     key = "".join(f"-{c.lower()}" if c.isupper() else c for c in key)
     definitions[key] = {}
-    for member in enum_cls:
-        record = ValueRecord(name=member.value, creation_mode=CreationMode.AUTOMATIC)
+    for i, member in enumerate(enum_cls):
+        record = ValueRecord(
+            name=member.value, creation_mode=CreationMode.AUTOMATIC, order=i
+        )
         definitions[key][record.name] = record.model_dump()
 
 

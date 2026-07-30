@@ -3,7 +3,7 @@ import { api } from '../api'
 import { PALETTE } from '../colors'
 import './AnnotationPanel.css'
 
-const NO_ANNOTATION = '__NONE__'
+
 
 export function AnnotationPanel({
   source,
@@ -45,7 +45,7 @@ export function AnnotationPanel({
     }
   }, [keyValues, selectedValue])
 
-  async function handleAnnotate() {
+  async function handleApplyAnnotation() {
     if (!source || !activeKey || !selectedValue) return
     setLoading(true)
     setError(null)
@@ -55,7 +55,27 @@ export function AnnotationPanel({
         selection.start,
         selection.end,
         activeKey,
-        selectedValue === NO_ANNOTATION ? null : selectedValue
+        selectedValue
+      )
+      onAnnotated()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleClearAnnotation() {
+    if (!source || !activeKey) return
+    setLoading(true)
+    setError(null)
+    try {
+      await api.annotateSource(
+        source.id,
+        selection.start,
+        selection.end,
+        activeKey,
+        null
       )
       onAnnotated()
     } catch (err) {
@@ -95,6 +115,36 @@ export function AnnotationPanel({
     }
   }
 
+  async function handleMoveUp(index) {
+    if (index === 0) return
+    const newValues = [...keyValues]
+    const temp = newValues[index - 1]
+    newValues[index - 1] = newValues[index]
+    newValues[index] = temp
+    onValuesChange(newValues)
+    try {
+      await api.reorderKeyValues(activeKey, newValues.map(v => v.name))
+    } catch (err) {
+      setError(err.message)
+      api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
+    }
+  }
+
+  async function handleMoveDown(index) {
+    if (index === keyValues.length - 1) return
+    const newValues = [...keyValues]
+    const temp = newValues[index + 1]
+    newValues[index + 1] = newValues[index]
+    newValues[index] = temp
+    onValuesChange(newValues)
+    try {
+      await api.reorderKeyValues(activeKey, newValues.map(v => v.name))
+    } catch (err) {
+      setError(err.message)
+      api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
+    }
+  }
+
   if (!source) return null
 
   return (
@@ -106,9 +156,8 @@ export function AnnotationPanel({
         <span className="selection-info-value">
           {selection.start === selection.end
             ? `Line ${selection.start + 1}`
-            : `Lines ${selection.start + 1}–${selection.end + 1} (${
-                selection.end - selection.start + 1
-              } lines)`}
+            : `Lines ${selection.start + 1}–${selection.end + 1} (${selection.end - selection.start + 1
+            } lines)`}
         </span>
       </div>
 
@@ -119,43 +168,75 @@ export function AnnotationPanel({
           onChange={(e) => setSelectedValue(e.target.value)}
           disabled={!activeKey}
         >
-          <option value={NO_ANNOTATION}>No annotation</option>
+          {keyValues.length === 0 && <option value="">No options available</option>}
           {keyValues.map((v) => (
             <option key={v.name} value={v.name}>{v.name}</option>
           ))}
         </select>
       </div>
 
-      <button
-        className="annotate-btn"
-        onClick={handleAnnotate}
-        disabled={!activeKey || !selectedValue || loading}
-        style={selectedValue === NO_ANNOTATION ? { background: '#ef4444', color: 'white' } : {}}
-      >
-        {loading ? 'Applying…' : (selectedValue === NO_ANNOTATION ? 'Clear annotation' : 'Annotate selected lines')}
-      </button>
+      <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+        <button
+          className="annotate-btn"
+          onClick={handleApplyAnnotation}
+          disabled={!activeKey || !selectedValue || loading}
+        >
+          {loading ? 'Applying…' : 'Apply Annotation'}
+        </button>
+
+        <button
+          className="annotate-btn"
+          onClick={handleClearAnnotation}
+          disabled={!activeKey || loading}
+          style={{ background: '#ef4444', color: 'white' }}
+        >
+          Clear Annotation
+        </button>
+      </div>
 
       {error && <div className="panel-error">{error}</div>}
 
       <div className="legend">
         <h4>Legend</h4>
         {keyValues.map((v, i) => (
-          <div key={v.name} className="legend-item">
+          <div key={v.name} className="legend-item" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span
               className="legend-color"
               style={{ background: PALETTE[i] || '#6b728040' }}
             />
-            <span className="legend-name">{v.name}</span>
-            {v.creation_mode === 'manual' && (
+            <span className="legend-name" style={{ flex: 1 }}>{v.name}</span>
+            <div className="legend-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button
-                className="delete-value-btn"
-                title="Delete value"
-                aria-label={`Delete ${v.name}`}
-                onClick={() => handleDeleteValue(v.name)}
+                className="reorder-btn"
+                disabled={i === 0}
+                onClick={() => handleMoveUp(i)}
+                title="Move up"
+                style={{ cursor: i === 0 ? 'default' : 'pointer', background: 'none', border: 'none', color: '#888', padding: '4px 6px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                &times;
+                ▲
               </button>
-            )}
+              <button
+                className="reorder-btn"
+                disabled={i === keyValues.length - 1}
+                onClick={() => handleMoveDown(i)}
+                title="Move down"
+                style={{ cursor: i === keyValues.length - 1 ? 'default' : 'pointer', background: 'none', border: 'none', color: '#888', padding: '4px 6px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ▼
+              </button>
+              {v.creation_mode === 'manual' ? (
+                <button
+                  className="delete-value-btn"
+                  title="Delete value"
+                  aria-label={`Delete ${v.name}`}
+                  onClick={() => handleDeleteValue(v.name)}
+                >
+                  &times;
+                </button>
+              ) : (
+                <div style={{ width: '16px' }} />
+              )}
+            </div>
           </div>
         ))}
         {isAddingValue ? (
@@ -178,7 +259,7 @@ export function AnnotationPanel({
             onClick={() => setIsAddingValue(true)}
             disabled={!activeKey}
           >
-            Add Step
+            Add Pipeline Step
           </button>
         )}
       </div>
