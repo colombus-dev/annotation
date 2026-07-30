@@ -139,21 +139,10 @@ async def reorder_key_values(
     user: api.service.auth.UserDep,
 ):
     definitions = await api.service.annotation_definitions.get(store)
-    if key not in definitions:
-        raise fastapi.HTTPException(
-            status_code=404, detail=f"Unknown annotation key: '{key}'"
-        )
 
-    # Validate that all values exist
-    for value in values:
-        if value not in definitions[key]:
-            raise fastapi.HTTPException(
-                status_code=400, detail=f"Unknown value '{value}' in reorder list"
-            )
-
-    # Update order for each value
     for idx, value in enumerate(values):
-        definitions[key][value]["order"] = idx
+        if value in definitions.get(key, {}):
+            definitions[key][value]["order"] = idx
 
     await store.set_document(
         api.service.store.annotation_definitions_key(), definitions
