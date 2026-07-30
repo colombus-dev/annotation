@@ -35,3 +35,10 @@
   flex: 1;
   min-height: 0;
 }
+
+/* Reposition the find widget down and away from the right edge */
+/* This gives tooltips enough room to spawn without hitting the editor bounds or scrollbars */
+.monaco-editor .find-widget {
+  top: 20px !important;
+  right: 50px !important;
+}
