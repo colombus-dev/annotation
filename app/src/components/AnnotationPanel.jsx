@@ -45,44 +45,50 @@ export function AnnotationPanel({
     }
   }, [keyValues, selectedValue])
 
-  async function handleApplyAnnotation() {
+  function handleApplyAnnotation() {
     if (!source || !activeKey || !selectedValue) return
     setLoading(true)
     setError(null)
-    try {
-      await api.annotateSource(
-        source.id,
-        selection.start,
-        selection.end,
-        activeKey,
-        selectedValue
-      )
-      onAnnotated()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+
+    api.annotateSource(
+      source.id,
+      selection.start,
+      selection.end,
+      activeKey,
+      selectedValue
+    )
+      .then(() => {
+        onAnnotated()
+      })
+      .catch((err) => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
-  async function handleClearAnnotation() {
+  function handleClearAnnotation() {
     if (!source || !activeKey) return
     setLoading(true)
     setError(null)
-    try {
-      await api.annotateSource(
-        source.id,
-        selection.start,
-        selection.end,
-        activeKey,
-        null
-      )
-      onAnnotated()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+
+    api.annotateSource(
+      source.id,
+      selection.start,
+      selection.end,
+      activeKey,
+      null
+    )
+      .then(() => {
+        onAnnotated()
+      })
+      .catch((err) => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   async function handleDeleteValue(value) {
@@ -115,34 +121,38 @@ export function AnnotationPanel({
     }
   }
 
-  async function handleMoveUp(index) {
+  function handleMoveUp(index) {
     if (index === 0) return
+
     const newValues = [...keyValues]
     const temp = newValues[index - 1]
     newValues[index - 1] = newValues[index]
     newValues[index] = temp
+
     onValuesChange(newValues)
-    try {
-      await api.reorderKeyValues(activeKey, newValues.map(v => v.name))
-    } catch (err) {
-      setError(err.message)
-      api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
-    }
+
+    api.reorderKeyValues(activeKey, newValues.map(v => v.name))
+      .catch((err) => {
+        setError(err.message)
+        api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
+      })
   }
 
-  async function handleMoveDown(index) {
+  function handleMoveDown(index) {
     if (index === keyValues.length - 1) return
+
     const newValues = [...keyValues]
     const temp = newValues[index + 1]
     newValues[index + 1] = newValues[index]
     newValues[index] = temp
+
     onValuesChange(newValues)
-    try {
-      await api.reorderKeyValues(activeKey, newValues.map(v => v.name))
-    } catch (err) {
-      setError(err.message)
-      api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
-    }
+
+    api.reorderKeyValues(activeKey, newValues.map(v => v.name))
+      .catch((err) => {
+        setError(err.message)
+        api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
+      })
   }
 
   if (!source) return null
