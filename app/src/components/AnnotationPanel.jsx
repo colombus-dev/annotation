@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
-import { PALETTE } from '../colors'
+import { PALETTE, buildColorMap } from '../colors'
 import './AnnotationPanel.css'
 
 
@@ -157,6 +157,8 @@ export function AnnotationPanel({
 
   if (!source) return null
 
+  const colorMap = buildColorMap(keyValues)
+
   return (
     <div className="annotation-panel">
       <h3>Annotate</h3>
@@ -212,7 +214,7 @@ export function AnnotationPanel({
           <div key={v.name} className="legend-item" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span
               className="legend-color"
-              style={{ background: PALETTE[i] || '#6b728040' }}
+              style={{ background: PALETTE[colorMap[v.name]] || '#6b728040' }}
             />
             <span className="legend-name" style={{ flex: 1 }}>{v.name}</span>
             <div className="legend-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
