@@ -144,6 +144,14 @@ async def reorder_key_values(
         if value in definitions.get(key, {}):
             definitions[key][value]["order"] = idx
 
+    await api.service.activity_log.record(
+        store,
+        user.id,
+        "key_values_reordered",
+        key=key,
+        values=values,
+    )
+
     await store.set_document(
         api.service.store.annotation_definitions_key(), definitions
     )
