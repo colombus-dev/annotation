@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { DownloadIcon } from 'lucide-react'
 import Editor from '@monaco-editor/react'
 import { PALETTE, buildColorMap } from '../colors'
 import './SourceViewer.css'
@@ -7,6 +8,25 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
   const editorRef = useRef(null)
   const decorationsRef = useRef([])
   const styleRef = useRef(null)
+
+  function handleDownloadJson() {
+    if (!source) return
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(source, null, 2))
+    const downloadAnchorNode = document.createElement('a')
+    downloadAnchorNode.setAttribute("href", dataStr)
+
+    let newFilename = source.filename || 'source.json'
+    if (newFilename.includes('.')) {
+      newFilename = newFilename.split('.').slice(0, -1).join('.') + '_annotated.json'
+    } else {
+      newFilename += '_annotated.json'
+    }
+
+    downloadAnchorNode.setAttribute("download", newFilename)
+    document.body.appendChild(downloadAnchorNode)
+    downloadAnchorNode.click()
+    downloadAnchorNode.remove()
+  }
 
   function handleEditorMount(editor) {
     editorRef.current = editor
@@ -93,7 +113,17 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
     <div className="source-viewer">
       <div className="source-header">
         <span className="source-filename">{source.filename}</span>
-        <span className="source-line-count">{source.lines.length} lines</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span className="source-line-count">{source.lines.length} lines</span>
+          <button
+            className="download-btn"
+            onClick={handleDownloadJson}
+            title="Export to JSON"
+            aria-label="Export to JSON"
+          >
+            <DownloadIcon size={14} />
+          </button>
+        </div>
       </div>
       <div className="editor-container">
         <Editor

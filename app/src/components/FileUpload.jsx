@@ -33,7 +33,7 @@ export function FileUpload({ onUploadSuccess }) {
 
   return (
     <div className="file-upload">
-      <h2>Upload Source</h2>
+      <h2>Upload</h2>
       <div className="upload-input">
         <input
           type="file"
@@ -45,7 +45,7 @@ export function FileUpload({ onUploadSuccess }) {
         <label htmlFor="file-input" className="upload-button">
           {loading ? 'Uploading...' : 'Choose File'}
         </label>
-        <span className="file-types-hint" style={{ fontSize: '0.8em', color: '#888', marginLeft: '10px' }}>
+        <span className="file-types-hint">
           Supports .py, .ipynb
         </span>
       </div>

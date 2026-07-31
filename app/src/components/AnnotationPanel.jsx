@@ -166,7 +166,7 @@ export function AnnotationPanel({
         </select>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
         <button
           className="annotate-btn"
           onClick={handleApplyAnnotation}
@@ -185,65 +185,67 @@ export function AnnotationPanel({
         </button>
       </div>
 
-      {error && <div className="panel-error">{error}</div>}
-
       <div className="legend">
         <h4>Legend</h4>
-        <ReorderList
-          onReorderFinish={handleReorderFinish}
-          className="legend-list"
-          itemClassName="legend-item"
-          withDragHandle={true}
-        >
-          {keyValues.map((v) => (
-            <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-[#333] bg-[#121212] rounded-lg py-2 pl-3 pr-12 w-full">
-              {/* Left side: Color and Text */}
-              <div className="flex items-center gap-2 flex-1">
-                <span
-                  style={{ background: PALETTE[colorMap[v.name]] || '#6b728040', width: '12px', height: '12px', borderRadius: '2px' }}
-                />
-                <span className="font-medium text-sm">{v.name}</span>
-              </div>
-
-              {/* Right side: Actions */}
-              <div className="flex items-center">
-                {v.creation_mode === 'manual' ? (
-                  <button
-                    className="text-[#a1a1aa] hover:text-white transition-colors flex"
-                    title="Delete value"
-                    aria-label={`Delete ${v.name}`}
-                    onClick={(e) => { e.stopPropagation(); handleDeleteValue(v.name); }}
-                  >
-                    <TrashIcon size={16} />
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          ))}
-        </ReorderList>
-        {isAddingValue ? (
-          <div className="add-value" style={{ borderTop: 'none', paddingTop: '8px' }}>
-            <form onSubmit={handleAddValue}>
-              <input
-                type="text"
-                placeholder="New value..."
-                value={newValue}
-                onChange={(e) => setNewValue(e.target.value)}
-                autoFocus
-              />
-              <button type="submit" disabled={!newValue.trim()}>Add</button>
-            </form>
-          </div>
-        ) : (
-          <button
-            className="annotate-btn"
-            style={{ marginTop: '12px', width: '100%', background: '#333' }}
-            onClick={() => setIsAddingValue(true)}
-            disabled={!activeKey}
+        <div className="legend-scroll-area">
+          <ReorderList
+            onReorderFinish={handleReorderFinish}
+            className="legend-list"
+            itemClassName="legend-item"
+            withDragHandle={true}
           >
-            Add Pipeline Step
-          </button>
-        )}
+            {keyValues.map((v) => (
+              <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-[#333] bg-[#121212] rounded-lg py-1.5 pl-3 pr-12 w-full">
+                {/* Left side: Color and Text */}
+                <div className="flex items-center gap-2 flex-1">
+                  <span
+                    style={{ background: PALETTE[colorMap[v.name]] || '#6b728040', width: '12px', height: '12px', borderRadius: '2px' }}
+                  />
+                  <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis">{v.name}</span>
+                </div>
+
+                {/* Right side: Actions */}
+                <div className="flex items-center">
+                  {v.creation_mode === 'manual' ? (
+                    <button
+                      className="text-[#a1a1aa] hover:text-white transition-colors flex"
+                      title="Delete value"
+                      aria-label={`Delete ${v.name}`}
+                      onClick={(e) => { e.stopPropagation(); handleDeleteValue(v.name); }}
+                    >
+                      <TrashIcon size={14} />
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </ReorderList>
+
+          {isAddingValue ? (
+            <div className="add-value" style={{ borderTop: 'none', paddingTop: '8px' }}>
+              <form onSubmit={handleAddValue}>
+                <input
+                  type="text"
+                  placeholder="New value..."
+                  value={newValue}
+                  onChange={(e) => setNewValue(e.target.value)}
+                  autoFocus
+                />
+                <button type="submit" disabled={!newValue.trim()}>Add</button>
+              </form>
+            </div>
+          ) : (
+            <button
+              className="annotate-btn"
+              style={{ marginTop: '12px', width: '100%', background: '#333' }}
+              onClick={() => setIsAddingValue(true)}
+              disabled={!activeKey}
+            >
+              Add Pipeline Step
+            </button>
+          )}
+          {error && <div className="panel-error" style={{ marginTop: '12px' }}>{error}</div>}
+        </div>
       </div>
     </div>
   )
