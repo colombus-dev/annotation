@@ -36,7 +36,7 @@ async def get_key_values(
         api.service.annotation_definitions.ValueRecord(**value)
         for value in definitions[key].values()
     ]
-    values.sort(key=lambda v: v.name)
+    values.sort(key=lambda v: (v.order, v.name))
     return values
 
 
@@ -72,9 +72,11 @@ async def post_key_value(
             status_code=400,
             detail=f"Value '{body.name}' already exists for key '{key}'",
         )
+    max_order = max([v.get("order", 0) for v in definitions[key].values()], default=-1)
     record = api.service.annotation_definitions.ValueRecord(
         name=body.name,
         creation_mode=api.service.annotation_definitions.CreationMode.MANUAL,
+        order=max_order + 1,
     )
     definitions[key][record.name] = record.model_dump()
     await store.set_document(
@@ -126,4 +128,30 @@ async def delete_key_value(
         "key_value_deleted",
         key=key,
         value=value,
+    )
+
+
+@router.put("/{key}/reorder", status_code=204)
+async def reorder_key_values(
+    key: str,
+    values: list[str],
+    store: api.service.store.StoreDep,
+    user: api.service.auth.UserDep,
+):
+    definitions = await api.service.annotation_definitions.get(store)
+
+    for idx, value in enumerate(values):
+        if value in definitions.get(key, {}):
+            definitions[key][value]["order"] = idx
+
+    await api.service.activity_log.record(
+        store,
+        user.id,
+        "key_values_reordered",
+        key=key,
+        values=values,
+    )
+
+    await store.set_document(
+        api.service.store.annotation_definitions_key(), definitions
     )

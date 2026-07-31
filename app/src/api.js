@@ -81,5 +81,12 @@ export const api = {
   deleteKeyValue: (key, value) =>
     request(`/annotation/keys/${key}/${value}`, { method: 'DELETE' }),
 
+  reorderKeyValues: (key, values) =>
+    request(`/annotation/keys/${key}/reorder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values),
+    }),
+
   getLogs: () => request('/logs'),
 }

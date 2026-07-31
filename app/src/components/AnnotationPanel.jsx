@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { ReorderList } from '@/components/ui/reorder-list'
+import { GripVertical, TrashIcon } from 'lucide-react'
 import { api } from '../api'
-import { PALETTE } from '../colors'
+import { PALETTE, buildColorMap } from '../colors'
 import './AnnotationPanel.css'
 
-const NO_ANNOTATION = '__NONE__'
+
 
 export function AnnotationPanel({
   source,
@@ -45,24 +47,50 @@ export function AnnotationPanel({
     }
   }, [keyValues, selectedValue])
 
-  async function handleAnnotate() {
+  function handleApplyAnnotation() {
     if (!source || !activeKey || !selectedValue) return
     setLoading(true)
     setError(null)
-    try {
-      await api.annotateSource(
-        source.id,
-        selection.start,
-        selection.end,
-        activeKey,
-        selectedValue === NO_ANNOTATION ? null : selectedValue
-      )
-      onAnnotated()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+
+    api.annotateSource(
+      source.id,
+      selection.start,
+      selection.end,
+      activeKey,
+      selectedValue
+    )
+      .then(() => {
+        onAnnotated()
+      })
+      .catch((err) => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
+
+  function handleClearAnnotation() {
+    if (!source || !activeKey) return
+    setLoading(true)
+    setError(null)
+
+    api.annotateSource(
+      source.id,
+      selection.start,
+      selection.end,
+      activeKey,
+      null
+    )
+      .then(() => {
+        onAnnotated()
+      })
+      .catch((err) => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   async function handleDeleteValue(value) {
@@ -95,7 +123,20 @@ export function AnnotationPanel({
     }
   }
 
+  function handleReorderFinish(newElements) {
+    const newValues = newElements.map(el => keyValues.find(v => v.name === el.props['data-name']))
+    onValuesChange(newValues)
+
+    api.reorderKeyValues(activeKey, newValues.map(v => v.name))
+      .catch((err) => {
+        setError(err.message)
+        api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
+      })
+  }
+
   if (!source) return null
+
+  const colorMap = buildColorMap(keyValues)
 
   return (
     <div className="annotation-panel">
@@ -106,9 +147,8 @@ export function AnnotationPanel({
         <span className="selection-info-value">
           {selection.start === selection.end
             ? `Line ${selection.start + 1}`
-            : `Lines ${selection.start + 1}–${selection.end + 1} (${
-                selection.end - selection.start + 1
-              } lines)`}
+            : `Lines ${selection.start + 1}–${selection.end + 1} (${selection.end - selection.start + 1
+            } lines)`}
         </span>
       </div>
 
@@ -119,45 +159,68 @@ export function AnnotationPanel({
           onChange={(e) => setSelectedValue(e.target.value)}
           disabled={!activeKey}
         >
-          <option value={NO_ANNOTATION}>No annotation</option>
+          {keyValues.length === 0 && <option value="">No options available</option>}
           {keyValues.map((v) => (
             <option key={v.name} value={v.name}>{v.name}</option>
           ))}
         </select>
       </div>
 
-      <button
-        className="annotate-btn"
-        onClick={handleAnnotate}
-        disabled={!activeKey || !selectedValue || loading}
-        style={selectedValue === NO_ANNOTATION ? { background: '#ef4444', color: 'white' } : {}}
-      >
-        {loading ? 'Applying…' : (selectedValue === NO_ANNOTATION ? 'Clear annotation' : 'Annotate selected lines')}
-      </button>
+      <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+        <button
+          className="annotate-btn"
+          onClick={handleApplyAnnotation}
+          disabled={!activeKey || !selectedValue || loading}
+        >
+          {loading ? 'Applying…' : 'Apply Annotation'}
+        </button>
+
+        <button
+          className="annotate-btn"
+          onClick={handleClearAnnotation}
+          disabled={!activeKey || loading}
+          style={{ background: '#ef4444', color: 'white' }}
+        >
+          Clear Annotation
+        </button>
+      </div>
 
       {error && <div className="panel-error">{error}</div>}
 
       <div className="legend">
         <h4>Legend</h4>
-        {keyValues.map((v, i) => (
-          <div key={v.name} className="legend-item">
-            <span
-              className="legend-color"
-              style={{ background: PALETTE[i] || '#6b728040' }}
-            />
-            <span className="legend-name">{v.name}</span>
-            {v.creation_mode === 'manual' && (
-              <button
-                className="delete-value-btn"
-                title="Delete value"
-                aria-label={`Delete ${v.name}`}
-                onClick={() => handleDeleteValue(v.name)}
-              >
-                &times;
-              </button>
-            )}
-          </div>
-        ))}
+        <ReorderList
+          onReorderFinish={handleReorderFinish}
+          className="legend-list"
+          itemClassName="legend-item"
+          withDragHandle={true}
+        >
+          {keyValues.map((v) => (
+            <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-[#333] bg-[#121212] rounded-lg py-2 pl-3 pr-12 w-full">
+              {/* Left side: Color and Text */}
+              <div className="flex items-center gap-2 flex-1">
+                <span
+                  style={{ background: PALETTE[colorMap[v.name]] || '#6b728040', width: '12px', height: '12px', borderRadius: '2px' }}
+                />
+                <span className="font-medium text-sm">{v.name}</span>
+              </div>
+
+              {/* Right side: Actions */}
+              <div className="flex items-center">
+                {v.creation_mode === 'manual' ? (
+                  <button
+                    className="text-[#a1a1aa] hover:text-white transition-colors flex"
+                    title="Delete value"
+                    aria-label={`Delete ${v.name}`}
+                    onClick={(e) => { e.stopPropagation(); handleDeleteValue(v.name); }}
+                  >
+                    <TrashIcon size={16} />
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </ReorderList>
         {isAddingValue ? (
           <div className="add-value" style={{ borderTop: 'none', paddingTop: '8px' }}>
             <form onSubmit={handleAddValue}>
@@ -178,7 +241,7 @@ export function AnnotationPanel({
             onClick={() => setIsAddingValue(true)}
             disabled={!activeKey}
           >
-            Add Step
+            Add Pipeline Step
           </button>
         )}
       </div>

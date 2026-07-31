@@ -1,5 +1,5 @@
 .annotation-panel {
-  width: 240px;
+  width: 320px;
   padding: 16px;
   background: #1e1e1e;
   border-left: 1px solid #333;
@@ -114,46 +114,4 @@
   font-size: 12px;
   color: #888;
   text-transform: uppercase;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-  font-size: 12px;
-  color: #ccc;
-}
-
-.legend-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  border: 1px solid #555;
-  flex: none;
-}
-
-.legend-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.delete-value-btn {
-  flex: none;
-  padding: 0 4px;
-  background: transparent;
-  border: none;
-  color: #777;
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  border-radius: 3px;
-}
-
-.delete-value-btn:hover {
-  background: #4a2222;
-  color: #ff6b6b;
 }

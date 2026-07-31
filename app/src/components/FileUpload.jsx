@@ -45,6 +45,9 @@ export function FileUpload({ onUploadSuccess }) {
         <label htmlFor="file-input" className="upload-button">
           {loading ? 'Uploading...' : 'Choose File'}
         </label>
+        <span className="file-types-hint" style={{ fontSize: '0.8em', color: '#888', marginLeft: '10px' }}>
+          Supports .py, .ipynb
+        </span>
       </div>
       {error && <div className="error">{error}</div>}
     </div>

@@ -25,7 +25,7 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
       document.head.appendChild(styleRef.current)
     }
     const rules = PALETTE.map(
-      (color, i) => `.annotation-color-${i} { background: ${color} !important; }`
+      (color, i) => `.annotation-color-${i} { background: ${color}40 !important; }`
     ).join('\n')
     styleRef.current.textContent = rules
   }
