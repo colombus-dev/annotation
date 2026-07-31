@@ -1,7 +1,20 @@
 .file-upload {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.file-upload h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.upload-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
 }
 
 #file-input {
@@ -9,14 +22,18 @@
 }
 
 .upload-button {
-  display: inline-block;
-  padding: 6px 14px;
+  display: block;
+  text-align: center;
+  padding: 8px 14px;
   background: #2563eb;
   color: white;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.2s;
 }
 
 .upload-button:hover {
@@ -26,6 +43,12 @@
 #file-input:disabled ~ .upload-button {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.file-types-hint {
+  font-size: 12px;
+  color: #a1a1aa;
+  text-align: center;
 }
 
 .error {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { TrashIcon } from 'lucide-react'
 import { api } from '../api'
 import { FileUpload } from './FileUpload'
 import { SourceViewer } from './SourceViewer'
@@ -78,7 +79,6 @@ export function Workspace({ authRequired, onLogout }) {
     <div className="app">
       <header className="app-header">
         <h1>Annotation</h1>
-        <FileUpload onUploadSuccess={handleUploadSuccess} />
         <button
           className="activity-log-btn"
           onClick={() => setShowActivityLog(true)}
@@ -113,6 +113,7 @@ export function Workspace({ authRequired, onLogout }) {
       )}
       <div className="app-main">
         <aside className="sidebar">
+          <FileUpload onUploadSuccess={handleUploadSuccess} />
           <h2>Sources</h2>
           {sources.length === 0 ? (
             <p className="empty">No sources uploaded</p>
@@ -132,7 +133,7 @@ export function Workspace({ authRequired, onLogout }) {
                     aria-label={`Delete ${s.filename}`}
                     onClick={(e) => handleDeleteSource(e, s.id)}
                   >
-                    &times;
+                    <TrashIcon size={14} />
                   </button>
                 </li>
               ))}
