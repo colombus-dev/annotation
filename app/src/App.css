@@ -114,7 +114,8 @@
 }
 
 .sidebar {
-  width: 200px;
+  width: 280px;
+  flex-shrink: 0;
   padding: 12px;
   border-right: 1px solid #333;
   overflow-y: auto;
@@ -123,7 +124,7 @@
 
 .sidebar h2 {
   margin: 0 0 10px;
-  font-size: 13px;
+  font-size: 15px;
   color: #888;
   text-transform: uppercase;
 }
@@ -152,7 +153,7 @@
   color: #ccc;
   cursor: pointer;
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .sidebar li.source-item button:not(.delete-source-btn) {
@@ -187,7 +188,7 @@
 
 .sidebar .empty {
   color: #666;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .editor-area {
