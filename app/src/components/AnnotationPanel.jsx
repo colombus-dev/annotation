@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Reorder } from 'framer-motion'
+import { ReorderList } from '@/components/ui/reorder-list'
 import { GripVertical, TrashIcon } from 'lucide-react'
 import { api } from '../api'
 import { PALETTE, buildColorMap } from '../colors'
@@ -123,7 +123,8 @@ export function AnnotationPanel({
     }
   }
 
-  function handleReorderFinish(newValues) {
+  function handleReorderFinish(newElements) {
+    const newValues = newElements.map(el => keyValues.find(v => v.name === el.props['data-name']))
     onValuesChange(newValues)
 
     api.reorderKeyValues(activeKey, newValues.map(v => v.name))
@@ -188,43 +189,38 @@ export function AnnotationPanel({
 
       <div className="legend">
         <h4>Legend</h4>
-        <Reorder.Group axis="y" values={keyValues} onReorder={handleReorderFinish} style={{ display: 'flex', flexDirection: 'column', gap: '4px', listStyleType: 'none', padding: 0 }}>
+        <ReorderList
+          onReorderFinish={handleReorderFinish}
+          className="legend-list"
+          itemClassName="legend-item"
+          withDragHandle={true}
+        >
           {keyValues.map((v) => (
-            <Reorder.Item key={v.name} value={v} className="legend-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: '#121212', border: '1px solid #333', padding: '8px 12px', borderRadius: '8px' }} whileDrag={{ scale: 1.02, cursor: 'grabbing', background: '#1a1a1a' }}>
-
+            <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-[#333] bg-[#121212] rounded-lg py-2 pl-3 pr-12 w-full">
               {/* Left side: Color and Text */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+              <div className="flex items-center gap-2 flex-1">
                 <span
-                  className="legend-color"
-                  style={{ background: PALETTE[colorMap[v.name]] || '#6b728040' }}
+                  style={{ background: PALETTE[colorMap[v.name]] || '#6b728040', width: '12px', height: '12px', borderRadius: '2px' }}
                 />
-                <span className="legend-name" style={{ fontWeight: 500 }}>{v.name}</span>
+                <span className="font-medium text-sm">{v.name}</span>
               </div>
 
-              {/* Right side: Actions and Grip */}
-              <div className="legend-actions" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              {/* Right side: Actions */}
+              <div className="flex items-center">
                 {v.creation_mode === 'manual' ? (
                   <button
-                    className="delete-value-btn"
+                    className="text-[#a1a1aa] hover:text-white transition-colors flex"
                     title="Delete value"
                     aria-label={`Delete ${v.name}`}
                     onClick={(e) => { e.stopPropagation(); handleDeleteValue(v.name); }}
-                    style={{ background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer', padding: 0, display: 'flex' }}
                   >
                     <TrashIcon size={16} />
                   </button>
-                ) : (
-                  <div style={{ width: '16px' }} />
-                )}
-
-                <div style={{ cursor: 'grab', color: '#a1a1aa', display: 'flex' }}>
-                  <GripVertical size={16} />
-                </div>
+                ) : null}
               </div>
-
-            </Reorder.Item>
+            </div>
           ))}
-        </Reorder.Group>
+        </ReorderList>
         {isAddingValue ? (
           <div className="add-value" style={{ borderTop: 'none', paddingTop: '8px' }}>
             <form onSubmit={handleAddValue}>
