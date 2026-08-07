@@ -59,11 +59,6 @@ async def post_key_value(
     definitions = await api.service.annotation_definitions.get(store, user_id)
     if key not in definitions:
         definitions[key] = {}
-    if len(definitions[key]) >= 10:
-        raise fastapi.HTTPException(
-            status_code=400,
-            detail=f"Maximum of 10 values per key reached",
-        )
     body.name = body.name.lower().replace(" ", "-")
     if not ANNOTATION_PATTERN.fullmatch(body.name):
         raise fastapi.HTTPException(
