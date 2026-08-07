@@ -8,7 +8,6 @@ import api.routers.annotation
 import api.routers.auth
 import api.routers.log
 import api.routers.source
-import api.service.annotation_definitions
 import api.service.store
 import api.settings
 
@@ -19,7 +18,6 @@ settings = api.settings.get()
 async def lifespan(application: fastapi.FastAPI):
     store = api.service.store.Store.connect(settings.redis_url)
     application.state.store = store
-    await api.service.annotation_definitions.create_keys(store)
     yield
     await store.close()
 

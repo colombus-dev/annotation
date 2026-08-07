@@ -8,8 +8,8 @@ PREFIX = "annotate"
 MAX_STREAM_LENGTH = 1000
 
 
-def annotation_definitions_key() -> str:
-    return f"{PREFIX}:annotation:definitions"
+def annotation_definitions_key(user_id: str) -> str:
+    return f"{PREFIX}:user:{user_id}:annotation:definitions"
 
 
 def source_key(user_id: str, source_id: str) -> str:
@@ -22,6 +22,18 @@ def source_key_pattern(user_id: str) -> str:
 
 def user_logs_key(user_id: str) -> str:
     return f"{PREFIX}:user:{user_id}:logs"
+
+
+def user_key(user_id: str) -> str:
+    return f"{PREFIX}:users:id:{user_id}"
+
+
+def user_email_index_key(email: str) -> str:
+    return f"{PREFIX}:users:email:{email}"
+
+
+def user_id_counter_key() -> str:
+    return f"{PREFIX}:users:id-counter"
 
 
 class Store:
@@ -48,6 +60,16 @@ class Store:
 
     async def exists(self, key: str) -> bool:
         return bool(await self._client.exists(key))
+
+    async def get_value(self, key: str) -> str | None:
+        value = await self._client.get(key)
+        return typing.cast("str | None", value)
+
+    async def set_value(self, key: str, value: str) -> None:
+        await self._client.set(key, value)
+
+    async def increment(self, key: str) -> int:
+        return await self._client.incr(key)
 
     async def get_document(self, key: str) -> dict | None:
         document = await self._client.json().get(key)

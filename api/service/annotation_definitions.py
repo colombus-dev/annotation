@@ -17,9 +17,9 @@ class ValueRecord(pydantic.BaseModel):
     order: int = 0
 
 
-async def get(store: api.service.store.Store) -> dict:
+async def get(store: api.service.store.Store, user_id: str) -> dict:
     definitions = await store.get_document(
-        api.service.store.annotation_definitions_key()
+        api.service.store.annotation_definitions_key(user_id)
     )
     if definitions is None:
         return {}
@@ -38,8 +38,8 @@ def _create_key(definitions: dict, enum_cls: type[enum.Enum]) -> None:
         definitions[key][record.name] = record.model_dump()
 
 
-async def create_keys(store: api.service.store.Store) -> None:
-    definitions_key = api.service.store.annotation_definitions_key()
+async def create_keys(store: api.service.store.Store, user_id: str) -> None:
+    definitions_key = api.service.store.annotation_definitions_key(user_id)
     if await store.exists(definitions_key):
         return
     definitions: dict = {}

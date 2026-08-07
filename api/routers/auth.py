@@ -7,6 +7,7 @@ import jose.jwt
 import pydantic
 
 import api.service.auth
+import api.service.store
 import api.settings
 
 router = fastapi.APIRouter(prefix="/api/auth", tags=["auth"])
@@ -31,7 +32,7 @@ class GoogleAuthRequest(pydantic.BaseModel):
 
 
 @router.post("/google")
-def auth_google(body: GoogleAuthRequest):
+async def auth_google(body: GoogleAuthRequest, store: api.service.store.StoreDep):
     try:
         info = google.oauth2.id_token.verify_oauth2_token(
             body.credential,
@@ -41,9 +42,11 @@ def auth_google(body: GoogleAuthRequest):
     except ValueError:
         raise fastapi.HTTPException(status_code=401, detail="Google auth failed")
 
-    user = api.service.auth.get_user_by_email(info["email"])
-    if not user:
+    email = info["email"]
+    if not api.service.auth.is_email_allowed(email):
         raise fastapi.HTTPException(status_code=401, detail="Google auth failed")
+
+    user = await api.service.auth.get_or_create_user(store, email)
 
     exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(
         hours=settings.jwt_expire_hours

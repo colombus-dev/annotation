@@ -31,11 +31,11 @@ class AnnotationRequest(pydantic.BaseModel):
 
 
 async def validate_annotation_value(
-    annotation: Annotation, store: api.service.store.Store
+    annotation: Annotation, store: api.service.store.Store, user_id: str
 ):
     if annotation.value is None:
         return
-    definitions = await api.service.annotation_definitions.get(store)
+    definitions = await api.service.annotation_definitions.get(store, user_id)
     if annotation.key not in definitions:
         raise fastapi.HTTPException(
             status_code=422,
@@ -137,7 +137,7 @@ async def put_source_annotation(
     if not await store.exists(key):
         raise fastapi.HTTPException(status_code=404, detail="Source not found")
 
-    await validate_annotation_value(body.annotation, store)
+    await validate_annotation_value(body.annotation, store, user_id)
 
     line_count = await store.get_array_length(key, "$.lines")
     if body.end >= line_count:

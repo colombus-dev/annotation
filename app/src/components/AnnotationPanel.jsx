@@ -206,16 +206,14 @@ export function AnnotationPanel({
 
                 {/* Right side: Actions */}
                 <div className="flex items-center">
-                  {v.creation_mode === 'manual' ? (
-                    <button
-                      className="text-[#a1a1aa] hover:text-white transition-colors flex"
-                      title="Delete value"
-                      aria-label={`Delete ${v.name}`}
-                      onClick={(e) => { e.stopPropagation(); handleDeleteValue(v.name); }}
-                    >
-                      <TrashIcon size={14} />
-                    </button>
-                  ) : null}
+                  <button
+                    className="text-[#a1a1aa] hover:text-white transition-colors flex"
+                    title="Delete value"
+                    aria-label={`Delete ${v.name}`}
+                    onClick={(e) => { e.stopPropagation(); handleDeleteValue(v.name); }}
+                  >
+                    <TrashIcon size={14} />
+                  </button>
                 </div>
               </div>
             ))}
