@@ -1,13 +1,18 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { DownloadIcon } from 'lucide-react'
 import Editor from '@monaco-editor/react'
-import { PALETTE, buildColorMap } from '../colors'
+import useSeriesColors, { SERIES_COLOR_PALETTE } from '../hooks/useSeriesColors'
 import './SourceViewer.css'
 
 export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }) {
   const editorRef = useRef(null)
   const decorationsRef = useRef([])
   const styleRef = useRef(null)
+  const coloredValues = useSeriesColors(keyValues)
+  const colorIndexByValue = useMemo(
+    () => Object.fromEntries(coloredValues.map((v) => [v.name, v.colorIndex])),
+    [coloredValues]
+  )
 
   function handleDownloadJson() {
     if (!source) return
@@ -44,7 +49,7 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
       styleRef.current = document.createElement('style')
       document.head.appendChild(styleRef.current)
     }
-    const rules = PALETTE.map(
+    const rules = SERIES_COLOR_PALETTE.map(
       (color, i) => `.annotation-color-${i} { background: ${color}40 !important; }`
     ).join('\n')
     styleRef.current.textContent = rules
@@ -60,12 +65,11 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
     }
 
     injectStyles()
-    const colorMap = buildColorMap(keyValues)
 
     const newDecorations = []
     source.lines.forEach((line) => {
       const value = line.annotations?.[activeKey]
-      if (!value || !(value in colorMap)) return
+      if (!value || !(value in colorIndexByValue)) return
 
       newDecorations.push({
         range: {
@@ -76,7 +80,7 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
         },
         options: {
           isWholeLine: true,
-          className: `annotation-color-${colorMap[value]}`,
+          className: `annotation-color-${colorIndexByValue[value]}`,
         },
       })
     })

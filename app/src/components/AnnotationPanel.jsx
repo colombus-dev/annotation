@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { ReorderList } from '@/components/ui/reorder-list'
 import { GripVertical, TrashIcon } from 'lucide-react'
 import { api } from '../api'
-import { PALETTE, buildColorMap } from '../colors'
+import useSeriesColors from '../hooks/useSeriesColors'
 import './AnnotationPanel.css'
 
 
@@ -22,6 +22,7 @@ export function AnnotationPanel({
   const [isAddingValue, setIsAddingValue] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const coloredValues = useSeriesColors(keyValues)
 
   useEffect(() => {
     api.getAnnotationKeys().then(setKeys).catch(console.error)
@@ -136,8 +137,6 @@ export function AnnotationPanel({
 
   if (!source) return null
 
-  const colorMap = buildColorMap(keyValues)
-
   return (
     <div className="annotation-panel">
       <h3>Annotate</h3>
@@ -194,12 +193,12 @@ export function AnnotationPanel({
             itemClassName="legend-item"
             withDragHandle={true}
           >
-            {keyValues.map((v) => (
+            {coloredValues.map((v) => (
               <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-[#333] bg-[#121212] rounded-lg py-1.5 pl-3 pr-12 w-full">
                 {/* Left side: Color and Text */}
                 <div className="flex items-center gap-2 flex-1">
                   <span
-                    style={{ background: PALETTE[colorMap[v.name]] || '#6b728040', width: '12px', height: '12px', borderRadius: '2px' }}
+                    style={{ background: v.color, width: '12px', height: '12px', borderRadius: '2px' }}
                   />
                   <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis">{v.name}</span>
                 </div>
