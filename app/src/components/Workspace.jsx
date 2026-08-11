@@ -52,9 +52,13 @@ export function Workspace({ authRequired, onLogout }) {
     navigate(`/source/${id}`)
   }
 
-  function handleUploadSuccess(result) {
+  function handleUploadSuccess(results) {
     refresh()
-    navigate(`/source/${result.id}`)
+    const uploaded = Array.isArray(results) ? results : [results]
+    const last = uploaded[uploaded.length - 1]
+    if (last) {
+      navigate(`/source/${last.id}`)
+    }
   }
 
   async function handleDeleteSource(e, id) {

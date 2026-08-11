@@ -2,32 +2,54 @@ import { useState } from 'react'
 import { api } from '../api'
 import './FileUpload.css'
 
+const VALID_TYPES = ['.py', '.ipynb']
+
 export function FileUpload({ onUploadSuccess }) {
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(null)
   const [error, setError] = useState(null)
 
   const handleFileSelect = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
 
-    const validTypes = ['.py', '.ipynb']
-    const ext = '.' + file.name.split('.').pop()
-    if (!validTypes.includes(ext)) {
-      setError('Only .py and .ipynb files are supported')
+    const invalidFiles = files.filter((file) => {
+      const ext = '.' + file.name.split('.').pop()
+      return !VALID_TYPES.includes(ext)
+    })
+    if (invalidFiles.length > 0) {
+      setError(
+        `Only .py and .ipynb files are supported (rejected: ${invalidFiles
+          .map((f) => f.name)
+          .join(', ')})`
+      )
       return
     }
 
     setLoading(true)
     setError(null)
 
-    try {
-      const result = await api.uploadSource(file)
-      onUploadSuccess(result)
-      e.target.value = ''
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    const uploaded = []
+    const failed = []
+
+    for (let i = 0; i < files.length; i++) {
+      setProgress({ current: i + 1, total: files.length })
+      try {
+        uploaded.push(await api.uploadSource(files[i]))
+      } catch (err) {
+        failed.push(`${files[i].name}: ${err.message}`)
+      }
+    }
+
+    setProgress(null)
+    setLoading(false)
+    e.target.value = ''
+
+    if (failed.length > 0) {
+      setError(failed.join('; '))
+    }
+    if (uploaded.length > 0) {
+      onUploadSuccess(uploaded)
     }
   }
 
@@ -38,15 +60,18 @@ export function FileUpload({ onUploadSuccess }) {
         <input
           type="file"
           accept=".py,.ipynb"
+          multiple
           onChange={handleFileSelect}
           disabled={loading}
           id="file-input"
         />
         <label htmlFor="file-input" className="upload-button">
-          {loading ? 'Uploading...' : 'Choose File'}
+          {loading
+            ? `Uploading${progress ? ` ${progress.current}/${progress.total}` : '...'}`
+            : 'Choose Files'}
         </label>
         <span className="file-types-hint">
-          Supports .py, .ipynb
+          Supports .py, .ipynb (multiple files allowed)
         </span>
       </div>
       {error && <div className="error">{error}</div>}
