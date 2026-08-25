@@ -72,7 +72,9 @@ async def run(args: argparse.Namespace) -> object:
             return [entry.model_dump() for entry in entries]
 
         if args.annotation_definitions:
-            return await api.service.annotation_definitions.get(store)
+            return await api.service.annotation_definitions.get(
+                store, user_id=args.user_id
+            )
 
         if args.sources:
             if args.source_id is not None:
