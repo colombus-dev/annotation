@@ -6,8 +6,6 @@ import re
 import statistics
 import time
 
-from dns.rdtypes import ANY
-
 import api.service.store
 import api.settings
 
@@ -34,7 +32,7 @@ def _glob_to_regex(term: str) -> str:
         elif char == "?":
             pattern.append(f"[^{TOKEN_DELIMITER}]")
         else:
-            pattern.append(re.escape(char))
+            pattern.append(char)
     return "".join(pattern)
 
 
@@ -49,7 +47,7 @@ def compile_query(query: str, default_key: str) -> re.Pattern:
         raise ValueError("Query terms cannot be empty; check for a stray '->'")
 
     token_patterns = [_term_to_token_pattern(term, default_key) for term in terms]
-    return re.compile(".*?".join(token_patterns))
+    return re.compile("".join(token_patterns))
 
 
 def timing_stats(samples_ms: list[float]) -> dict:
