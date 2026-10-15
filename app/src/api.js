@@ -63,7 +63,8 @@ export const api = {
 
   getSources: () => request('/source'),
 
-  getSource: (sourceId) => request(`/source/${sourceId}`),
+  getSource: (sourceId, { log = true } = {}) =>
+    request(`/source/${sourceId}${log ? '' : '?log=false'}`),
 
   deleteSource: (sourceId) => request(`/source/${sourceId}`, { method: 'DELETE' }),
 

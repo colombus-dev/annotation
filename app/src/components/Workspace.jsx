@@ -77,7 +77,7 @@ export function Workspace() {
 
   async function handleAnnotated() {
     if (!selectedSource) return
-    const updated = await api.getSource(selectedSource.id)
+    const updated = await api.getSource(selectedSource.id, { log: false })
     setSelectedSource(updated)
     refresh()
   }

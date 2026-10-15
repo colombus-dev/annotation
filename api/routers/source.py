@@ -96,6 +96,7 @@ async def get_source(
     source_id: str,
     store: api.service.store.StoreDep,
     user: api.service.auth.UserDep,
+    log: bool = True,
 ):
     source = await store.get_document(
         api.service.store.source_key(str(user.id), source_id)
@@ -103,9 +104,10 @@ async def get_source(
     if source is None:
         raise fastapi.HTTPException(status_code=404, detail="Source not found")
 
-    await api.service.activity_log.record(
-        store, user.id, "source_viewed", source_id=source_id
-    )
+    if log:
+        await api.service.activity_log.record(
+            store, user.id, "source_viewed", source_id=source_id
+        )
 
     return source
 
