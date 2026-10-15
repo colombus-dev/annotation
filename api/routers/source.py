@@ -102,6 +102,11 @@ async def get_source(
     )
     if source is None:
         raise fastapi.HTTPException(status_code=404, detail="Source not found")
+
+    await api.service.activity_log.record(
+        store, user.id, "source_viewed", source_id=source_id
+    )
+
     return source
 
 

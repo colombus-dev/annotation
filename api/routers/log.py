@@ -1,7 +1,10 @@
+import typing
+
 import fastapi
 
 import api.service.activity_log
 import api.service.auth
+import api.service.debuggingspy
 import api.service.store
 
 router = fastapi.APIRouter(prefix="/api/logs", tags=["logs"])
@@ -13,3 +16,11 @@ async def get_logs(
     user: api.service.auth.UserDep,
 ) -> list[api.service.activity_log.LogEntry]:
     return await api.service.activity_log.list_entries(store, user.id)
+
+
+@router.get("/debuggingspy", status_code=200)
+async def get_logs_debuggingspy(
+    store: api.service.store.StoreDep,
+    user: api.service.auth.UserDep,
+) -> list[dict[str, typing.Any]]:
+    return await api.service.debuggingspy.list_events(store, user.id)
