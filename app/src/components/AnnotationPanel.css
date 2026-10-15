@@ -40,7 +40,7 @@
   padding: 4px 6px;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--foreground);
   font-size: 12px;
 }
@@ -50,10 +50,10 @@
   background: #2563eb;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   flex-shrink: 0;
 }
 
@@ -100,19 +100,20 @@
   padding: 4px 6px;
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--foreground);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .add-value button {
   padding: 4px 8px;
   background: var(--secondary);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--secondary-foreground);
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .add-value button:hover:not(:disabled) {
@@ -152,5 +153,5 @@
 }
 .legend-scroll-area::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
 }

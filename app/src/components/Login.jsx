@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, setToken } from '../api'
+import { APP_NAME } from '../constants'
 import './Login.css'
 
 export function Login({ onLogin }) {
@@ -52,7 +53,7 @@ export function Login({ onLogin }) {
 
   return (
     <div className="login-page">
-      <h1>Annotate</h1>
+      <h1>{APP_NAME}</h1>
       <p>Sign in to continue</p>
 
       <form className="login-password-form" onSubmit={handlePasswordLogin}>

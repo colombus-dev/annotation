@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
 import { UserAvatar, roleLabel } from '@/components/UserAvatar'
+import { APP_NAME } from '@/constants'
 import { useTheme } from '@/hooks/useTheme'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes'
@@ -23,7 +24,7 @@ export function Navbar({ user, authRequired, onLogout }) {
     <div className="flex h-full w-64 flex-col gap-6 p-4">
       <div className="px-1">
         <span className="text-lg font-semibold tracking-tight text-[#2563eb]">
-          Annotate
+          {APP_NAME}
         </span>
       </div>
 
