@@ -6,6 +6,7 @@ import google.oauth2.id_token
 import jose.jwt
 import pydantic
 
+import api.service.activity_log
 import api.service.auth
 import api.service.store
 import api.settings
@@ -47,6 +48,8 @@ async def auth_google(body: GoogleAuthRequest, store: api.service.store.StoreDep
         raise fastapi.HTTPException(status_code=401, detail="Google auth failed")
 
     user = await api.service.auth.get_or_create_user(store, email)
+
+    await api.service.activity_log.record(store, user.id, "user_logged_in")
 
     exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(
         hours=settings.jwt_expire_hours
