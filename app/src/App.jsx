@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { api, isAuthenticated, clearToken } from './api'
 import { Login } from './components/Login'
 import { Layout } from './components/Layout'
+import { Team } from './components/Team'
 import { Workspace } from './components/Workspace'
 import { ROUTES } from './routes'
 import './App.css'
@@ -34,6 +35,8 @@ function App() {
     setAuthed(false)
   }
 
+  const isAdmin = user?.role === 'admin'
+
   return (
     <Routes>
       <Route
@@ -57,8 +60,15 @@ function App() {
       >
         <Route path={ROUTES.SOURCE} element={<Workspace />} />
         <Route path={ROUTES.HOME} element={<Workspace />} />
-        <Route path={ROUTES.TEAM} element={null} />
-        <Route path={ROUTES.ACTIVITY} element={null} />
+        <Route
+          path={ROUTES.TEAM}
+          element={isAdmin ? <Team /> : <Navigate to={ROUTES.HOME} replace />}
+        />
+        <Route
+          path={ROUTES.ACTIVITY}
+          element={isAdmin ? null : <Navigate to={ROUTES.HOME} replace />}
+        />
+        <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
       </Route>
     </Routes>
   )

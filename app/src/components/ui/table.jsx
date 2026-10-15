@@ -1,3 +1,5 @@
+import { ChevronDownIcon, ChevronUpIcon, ChevronsUpDownIcon } from "lucide-react"
+
 import { cn } from "@/lib/utils"
 
 function Table({ className, ...props }) {
@@ -41,15 +43,44 @@ function TableRow({ className, ...props }) {
   );
 }
 
-function TableHead({ className, ...props }) {
+function TableHead({ className, sortDirection, onSort, children, ...props }) {
+  if (!onSort) {
+    return (
+      <th
+        data-slot="table-head"
+        className={cn(
+          "h-9 px-3 text-left align-middle text-xs font-medium text-muted-foreground",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </th>
+    );
+  }
+
+  const Icon =
+    sortDirection === "asc"
+      ? ChevronUpIcon
+      : sortDirection === "desc"
+        ? ChevronDownIcon
+        : ChevronsUpDownIcon
+
   return (
     <th
       data-slot="table-head"
-      className={cn(
-        "h-9 px-3 text-left align-middle text-xs font-medium text-muted-foreground",
-        className
-      )}
-      {...props} />
+      className={cn("h-9 px-3 text-left align-middle", className)}
+      {...props}
+    >
+      <button
+        type="button"
+        onClick={onSort}
+        className="flex items-center gap-1 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground"
+      >
+        {children}
+        <Icon size={12} className={sortDirection ? "text-foreground" : undefined} />
+      </button>
+    </th>
   );
 }
 

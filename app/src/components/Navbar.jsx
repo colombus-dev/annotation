@@ -1,4 +1,12 @@
-import { LogOutIcon, MoonIcon, MoreVerticalIcon, SunIcon } from 'lucide-react'
+import {
+  CodeIcon,
+  HistoryIcon,
+  LogOutIcon,
+  MoonIcon,
+  MoreVerticalIcon,
+  SunIcon,
+  UsersIcon,
+} from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -10,9 +18,9 @@ import { cn } from '@/lib/utils'
 import { ROUTES } from '@/routes'
 
 const NAV_ITEMS = [
-  { to: ROUTES.HOME, label: 'Workspace', adminOnly: false },
-  { to: ROUTES.TEAM, label: 'Team', adminOnly: true },
-  { to: ROUTES.ACTIVITY, label: 'Activity', adminOnly: true },
+  { to: ROUTES.HOME, label: 'Workspace', icon: CodeIcon, adminOnly: false },
+  { to: ROUTES.TEAM, label: 'Team', icon: UsersIcon, adminOnly: true },
+  { to: ROUTES.ACTIVITY, label: 'Activity History', icon: HistoryIcon, adminOnly: true },
 ]
 
 export function Navbar({ user, authRequired, onLogout }) {
@@ -36,11 +44,12 @@ export function Navbar({ user, authRequired, onLogout }) {
             end={item.to === ROUTES.HOME}
             className={({ isActive }) =>
               cn(
-                'rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground',
+                'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground',
                 isActive && 'bg-muted text-foreground'
               )
             }
           >
+            <item.icon size={16} />
             {item.label}
           </NavLink>
         ))}
