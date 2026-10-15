@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { TrashIcon } from 'lucide-react'
 import { api } from '../api'
+import { useToast } from '../hooks/useToast'
 import { ROUTES, sourcePath } from '../routes'
 import { ConfirmDialog } from './ui/confirm-dialog'
 import { FileUpload } from './FileUpload'
@@ -11,6 +12,7 @@ import { AnnotationPanel } from './AnnotationPanel'
 export function Workspace() {
   const { sourceId } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [sources, setSources] = useState([])
   const [selectedSource, setSelectedSource] = useState(null)
@@ -62,11 +64,15 @@ export function Workspace() {
   }
 
   async function handleDeleteSource(id) {
-    await api.deleteSource(id)
-    if (selectedSource?.id === id) {
-      navigate(ROUTES.HOME, { replace: true })
+    try {
+      await api.deleteSource(id)
+      if (selectedSource?.id === id) {
+        navigate(ROUTES.HOME, { replace: true })
+      }
+      refresh()
+    } catch (err) {
+      toast.error(err.message)
     }
-    refresh()
   }
 
   async function handleAnnotated() {

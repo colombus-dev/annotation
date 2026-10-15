@@ -84,17 +84,6 @@
   background: var(--muted);
 }
 
-.panel-error {
-  color: var(--destructive);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 6px 8px;
-  background: color-mix(in oklch, var(--destructive) 15%, transparent);
-  border: 1px solid color-mix(in oklch, var(--destructive) 40%, transparent);
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
 .add-value {
   border-top: 1px solid var(--border);
   padding-top: 6px;

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from '../api'
+import { useToast } from '../hooks/useToast'
 import './FileUpload.css'
 
 const VALID_TYPES = ['.py', '.ipynb']
@@ -7,7 +8,8 @@ const VALID_TYPES = ['.py', '.ipynb']
 export function FileUpload({ onUploadSuccess }) {
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState(null)
-  const [error, setError] = useState(null)
+  const [validationError, setValidationError] = useState(null)
+  const toast = useToast()
 
   const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files ?? [])
@@ -18,7 +20,7 @@ export function FileUpload({ onUploadSuccess }) {
       return !VALID_TYPES.includes(ext)
     })
     if (invalidFiles.length > 0) {
-      setError(
+      setValidationError(
         `Only .py and .ipynb files are supported (rejected: ${invalidFiles
           .map((f) => f.name)
           .join(', ')})`
@@ -27,7 +29,7 @@ export function FileUpload({ onUploadSuccess }) {
     }
 
     setLoading(true)
-    setError(null)
+    setValidationError(null)
 
     const uploaded = []
     const failed = []
@@ -46,7 +48,7 @@ export function FileUpload({ onUploadSuccess }) {
     e.target.value = ''
 
     if (failed.length > 0) {
-      setError(failed.join('; '))
+      toast.error(failed.join('; '))
     }
     if (uploaded.length > 0) {
       onUploadSuccess(uploaded)
@@ -74,7 +76,7 @@ export function FileUpload({ onUploadSuccess }) {
           Supports .py, .ipynb (multiple files allowed)
         </span>
       </div>
-      {error && <div className="error">{error}</div>}
+      {validationError && <div className="error">{validationError}</div>}
     </div>
   )
 }

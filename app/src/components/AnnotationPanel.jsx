@@ -3,6 +3,7 @@ import { ReorderList } from '@/components/ui/reorder-list'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { GripVertical, TrashIcon } from 'lucide-react'
 import { api } from '../api'
+import { useToast } from '../hooks/useToast'
 import useSeriesColors from '../hooks/useSeriesColors'
 import './AnnotationPanel.css'
 
@@ -21,9 +22,9 @@ export function AnnotationPanel({
   const [selectedValue, setSelectedValue] = useState('')
   const [newValue, setNewValue] = useState('')
   const [isAddingValue, setIsAddingValue] = useState(false)
-  const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const coloredValues = useSeriesColors(keyValues)
+  const toast = useToast()
 
   useEffect(() => {
     api.getAnnotationKeys().then(setKeys).catch(console.error)
@@ -52,7 +53,6 @@ export function AnnotationPanel({
   function handleApplyAnnotation() {
     if (!source || !activeKey || !selectedValue) return
     setLoading(true)
-    setError(null)
 
     api.annotateSource(
       source.id,
@@ -65,7 +65,7 @@ export function AnnotationPanel({
         onAnnotated()
       })
       .catch((err) => {
-        setError(err.message)
+        toast.error(err.message)
       })
       .finally(() => {
         setLoading(false)
@@ -75,7 +75,6 @@ export function AnnotationPanel({
   function handleClearAnnotation() {
     if (!source || !activeKey) return
     setLoading(true)
-    setError(null)
 
     api.annotateSource(
       source.id,
@@ -88,7 +87,7 @@ export function AnnotationPanel({
         onAnnotated()
       })
       .catch((err) => {
-        setError(err.message)
+        toast.error(err.message)
       })
       .finally(() => {
         setLoading(false)
@@ -98,21 +97,19 @@ export function AnnotationPanel({
   async function handleDeleteValue(value) {
     if (!activeKey) return
 
-    setError(null)
     try {
       await api.deleteKeyValue(activeKey, value)
       const updated = await api.getKeyValues(activeKey)
       onValuesChange(updated)
       if (selectedValue === value) setSelectedValue('')
     } catch (err) {
-      setError(err.message)
+      toast.error(err.message)
     }
   }
 
   async function handleAddValue(e) {
     e.preventDefault()
     if (!activeKey || !newValue.trim()) return
-    setError(null)
     try {
       await api.createKeyValue(activeKey, newValue.trim())
       setNewValue('')
@@ -120,7 +117,7 @@ export function AnnotationPanel({
       const updated = await api.getKeyValues(activeKey)
       onValuesChange(updated)
     } catch (err) {
-      setError(err.message)
+      toast.error(err.message)
     }
   }
 
@@ -130,7 +127,7 @@ export function AnnotationPanel({
 
     api.reorderKeyValues(activeKey, newValues.map(v => v.name))
       .catch((err) => {
-        setError(err.message)
+        toast.error(err.message)
         api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
       })
   }
@@ -244,7 +241,6 @@ export function AnnotationPanel({
               Add Pipeline Step
             </button>
           )}
-          {error && <div className="panel-error" style={{ marginTop: '12px' }}>{error}</div>}
         </div>
       </div>
     </div>
