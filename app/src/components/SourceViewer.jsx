@@ -2,9 +2,11 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { DownloadIcon } from 'lucide-react'
 import Editor from '@monaco-editor/react'
 import useSeriesColors, { SERIES_COLOR_PALETTE } from '../hooks/useSeriesColors'
+import { useTheme } from '../hooks/useTheme'
 import './SourceViewer.css'
 
 export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }) {
+  const [theme] = useTheme()
   const editorRef = useRef(null)
   const decorationsRef = useRef([])
   const styleRef = useRef(null)
@@ -134,7 +136,7 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
           height="100%"
           language="python"
           value={code}
-          theme="vs-dark"
+          theme={theme === 'dark' ? 'vs-dark' : 'light'}
           onMount={handleEditorMount}
           options={{
             readOnly: true,
