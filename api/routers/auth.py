@@ -47,7 +47,9 @@ async def auth_google(body: GoogleAuthRequest, store: api.service.store.StoreDep
     if not api.service.auth.is_email_allowed(email):
         raise fastapi.HTTPException(status_code=401, detail="Google auth failed")
 
-    user = await api.service.auth.get_or_create_user(store, email)
+    user = await api.service.auth.get_or_create_admin(
+        store, email, info.get("name", "")
+    )
 
     await api.service.activity_log.record(store, user.id, "user_logged_in")
 
@@ -57,7 +59,7 @@ async def auth_google(body: GoogleAuthRequest, store: api.service.store.StoreDep
     token = jose.jwt.encode(
         {
             "sub": str(user.id),
-            "email": user.email,
+            "username": user.username,
             "name": info.get("name", ""),
             "exp": exp,
         },
