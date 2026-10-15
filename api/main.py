@@ -8,6 +8,7 @@ import api.routers.annotation
 import api.routers.auth
 import api.routers.log
 import api.routers.source
+import api.routers.users
 import api.service.store
 import api.settings
 
@@ -39,6 +40,7 @@ def create_app() -> fastapi.FastAPI:
     application.include_router(api.routers.source.router)
     application.include_router(api.routers.annotation.router)
     application.include_router(api.routers.log.router)
+    application.include_router(api.routers.users.router)
     return application
 
 
