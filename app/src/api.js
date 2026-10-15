@@ -96,4 +96,22 @@ export const api = {
     }),
 
   getLogs: () => request('/logs'),
+
+  getCurrentUser: () => request('/users/me'),
+
+  getUsers: () => request('/users'),
+
+  createUser: (username, name) =>
+    request('/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, name }),
+    }),
+
+  regeneratePassword: (userId) =>
+    request(`/users/${userId}/regenerate-password`, { method: 'POST' }),
+
+  deleteUser: (userId) => request(`/users/${userId}`, { method: 'DELETE' }),
+
+  getUserLogs: (userId) => request(`/users/${userId}/logs`),
 }
