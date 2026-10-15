@@ -4,24 +4,21 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: #1a1a1a;
-  color: #e0e0e0;
+  background: var(--background);
+  color: var(--foreground);
   gap: 16px;
 }
 
 .login-page h1 {
   font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #2563eb;
 }
 
 .login-page p {
-  color: #888;
+  color: var(--muted-foreground);
   font-size: 14px;
-}
-
-.login-divider {
-  color: #666;
-  font-size: 12px;
-  text-transform: uppercase;
 }
 
 .login-password-form {
@@ -33,10 +30,10 @@
 
 .login-password-form input {
   padding: 8px 10px;
-  background: #222;
-  border: 1px solid #444;
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 4px;
-  color: #e0e0e0;
+  color: var(--foreground);
   font-size: 14px;
 }
 
@@ -56,6 +53,32 @@
 }
 
 .login-error {
-  color: #ef4444;
+  color: var(--destructive);
   font-size: 12px;
+}
+
+.login-google-hint {
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.login-google-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.login-google-link:hover {
+  color: #2563eb;
+}
+
+.login-google-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
 }
