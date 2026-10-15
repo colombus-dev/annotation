@@ -65,7 +65,7 @@ async def create_member(
     if not username:
         raise fastapi.HTTPException(status_code=422, detail="Username is required")
 
-    name = body.name.strip()
+    name = body.name.strip().title()
     if not name:
         raise fastapi.HTTPException(status_code=422, detail="Full name is required")
 
