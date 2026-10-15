@@ -31,12 +31,19 @@ class User(pydantic.BaseModel):
     username: str
     name: str = ""
     password_hash: str | None = None
+    created_at: str
 
 
-DEV_USER = User(id=0, role="admin", username="dev@localhost", name="Dev")
+def now_iso() -> str:
+    return datetime.datetime.now(datetime.UTC).isoformat()
 
 
-def generate_password(length: int = 12) -> str:
+DEV_USER = User(
+    id=0, role="admin", username="dev@localhost", name="Dev", created_at=now_iso()
+)
+
+
+def generate_password(length: int = 36) -> str:
     return "".join(secrets.choice(_PASSWORD_ALPHABET) for _ in range(length))
 
 
@@ -105,7 +112,9 @@ async def get_or_create_admin(
             return user
 
     user_id = await store.increment(api.service.store.user_id_counter_key())
-    user = User(id=user_id, role="admin", username=email, name=name)
+    user = User(
+        id=user_id, role="admin", username=email, name=name, created_at=now_iso()
+    )
     await store.set_document(
         api.service.store.user_key(str(user.id)), user.model_dump()
     )

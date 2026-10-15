@@ -18,10 +18,17 @@ class UserOut(pydantic.BaseModel):
     role: api.service.auth.Role
     username: str
     name: str
+    created_at: str
 
 
 def _to_public(user: api.service.auth.User) -> UserOut:
-    return UserOut(id=user.id, role=user.role, username=user.username, name=user.name)
+    return UserOut(
+        id=user.id,
+        role=user.role,
+        username=user.username,
+        name=user.name,
+        created_at=user.created_at,
+    )
 
 
 @router.get("/me", status_code=200)
@@ -75,6 +82,7 @@ async def create_member(
         username=username,
         name=name,
         password_hash=api.service.auth.hash_password(password),
+        created_at=api.service.auth.now_iso(),
     )
     await store.set_document(
         api.service.store.user_key(str(user.id)), user.model_dump()
