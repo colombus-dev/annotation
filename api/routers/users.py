@@ -8,7 +8,9 @@ import api.service.store
 
 router = fastapi.APIRouter(prefix="/api/users", tags=["users"])
 
-USER_LIST_ADAPTER = pydantic.TypeAdapter(list[api.service.auth.User])
+USER_LIST_ADAPTER: pydantic.TypeAdapter[list[api.service.auth.User]] = (
+    pydantic.TypeAdapter(list[api.service.auth.User])
+)
 
 
 class UserOut(pydantic.BaseModel):
