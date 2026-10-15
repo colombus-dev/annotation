@@ -5,25 +5,25 @@ import ujson
 
 
 class Step(enum.Enum):
-    DATA_ACQUISITION = "data-acquisition"
-    DATA_PREPARATION = "data-preparation"
-    MODELING = "modeling"
-    TRAINING = "training"
-    EVALUATION = "evaluation"
-    PREDICTION = "prediction"
+    DATA_ACQUISITION = "Data Acquisition"
+    DATA_PREPARATION = "Data Preparation"
+    MODELING = "Modeling"
+    TRAINING = "Training"
+    EVALUATION = "Evaluation"
+    PREDICTION = "Prediction"
 
 
 class AlgorithmFamily(enum.Enum):
-    LINEAR_MODELS = "linear-models"
-    DECISION_TREE = "decision-tree"
-    RANDOM_FOREST = "random-forest"
-    GRADIENT_BOOSTING = "gradient-boosting"
-    SVM = "svm"
-    KNN = "knn"
-    NAIVE_BAYES = "naive-bayes"
-    NEURAL_NETWORK = "neural-network"
-    CLUSTERING = "clustering"
-    DIMENSIONALITY_REDUCTION = "dimensionality-reduction"
+    LINEAR_MODELS = "Linear Models"
+    DECISION_TREE = "Decision Tree"
+    RANDOM_FOREST = "Random Forest"
+    GRADIENT_BOOSTING = "Gradient Boosting"
+    SVM = "SVM"
+    KNN = "KNN"
+    NAIVE_BAYES = "Naive Bayes"
+    NEURAL_NETWORK = "Neural Network"
+    CLUSTERING = "Clustering"
+    DIMENSIONALITY_REDUCTION = "Dimensionality Reduction"
 
 
 class SourceLine(typing.TypedDict):

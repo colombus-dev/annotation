@@ -59,12 +59,9 @@ async def post_key_value(
     definitions = await api.service.annotation_definitions.get(store, user_id)
     if key not in definitions:
         definitions[key] = {}
-    body.name = body.name.lower().replace(" ", "-")
-    if not ANNOTATION_PATTERN.fullmatch(body.name):
-        raise fastapi.HTTPException(
-            status_code=422,
-            detail="Annotation value must be lowercase letters, digits and hyphens",
-        )
+    body.name = body.name.strip().title()
+    if not body.name:
+        raise fastapi.HTTPException(status_code=422, detail="Value is required")
     if body.name in definitions[key]:
         raise fastapi.HTTPException(
             status_code=400,
