@@ -23,7 +23,7 @@ export function Navbar({ user, authRequired, onLogout }) {
   return (
     <div className="flex h-full w-64 flex-col gap-6 p-4">
       <div className="px-1">
-        <span className="text-lg font-semibold tracking-tight text-[#2563eb]">
+        <span className="text-lg font-semibold tracking-tight text-primary">
           {APP_NAME}
         </span>
       </div>

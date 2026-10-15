@@ -63,11 +63,13 @@ function AlertDialogCancel({ className, ...props }) {
   );
 }
 
-function AlertDialogAction({ className, ...props }) {
+function AlertDialogAction({ className, variant = "destructive", ...props }) {
   return (
     <AlertDialogPrimitive.Close
       className={cn(
-        "rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-white hover:bg-destructive/90",
+        "rounded-md px-3 py-1.5 text-sm font-medium",
+        variant === "destructive" && "bg-destructive text-white hover:bg-destructive/90",
+        variant === "primary" && "bg-primary text-primary-foreground hover:bg-primary/80",
         className
       )}
       {...props} />

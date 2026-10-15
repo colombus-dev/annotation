@@ -13,7 +13,7 @@
   font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: #2563eb;
+  color: var(--primary);
 }
 
 .login-page p {
@@ -39,17 +39,17 @@
 
 .login-password-form button[type='submit'] {
   padding: 8px;
-  background: #2563eb;
+  background: var(--primary);
   border: none;
   border-radius: 6px;
-  color: white;
+  color: var(--primary-foreground);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
 }
 
 .login-password-form button[type='submit']:hover {
-  background: #1d4ed8;
+  background: color-mix(in oklch, var(--primary) 85%, black);
 }
 
 .login-error {
@@ -74,7 +74,7 @@
 }
 
 .login-google-link:hover {
-  color: #2563eb;
+  color: var(--primary);
 }
 
 .login-google-link:disabled {

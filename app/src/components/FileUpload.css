@@ -25,8 +25,8 @@
   display: block;
   text-align: center;
   padding: 8px 14px;
-  background: #2563eb;
-  color: white;
+  background: var(--primary);
+  color: var(--primary-foreground);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -37,7 +37,7 @@
 }
 
 .upload-button:hover {
-  background: #1d4ed8;
+  background: color-mix(in oklch, var(--primary) 85%, black);
 }
 
 #file-input:disabled ~ .upload-button {

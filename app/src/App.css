@@ -60,8 +60,8 @@
 }
 
 .sidebar button.active {
-  background: #2563eb;
-  color: white;
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .delete-source-btn {

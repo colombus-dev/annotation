@@ -47,8 +47,8 @@
 
 .annotate-btn {
   padding: 6px;
-  background: #2563eb;
-  color: white;
+  background: var(--primary);
+  color: var(--primary-foreground);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -58,7 +58,7 @@
 }
 
 .annotate-btn:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: color-mix(in oklch, var(--primary) 85%, black);
 }
 
 .annotate-btn:disabled {
