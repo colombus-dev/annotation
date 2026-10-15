@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api, setToken } from '../api'
 import './Login.css'
 
 export function Login({ onLogin }) {
   const buttonRef = useRef(null)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     api.getAuthConfig().then(({ google_client_id }) => {
@@ -34,10 +37,43 @@ export function Login({ onLogin }) {
     }
   }
 
+  async function handlePasswordLogin(e) {
+    e.preventDefault()
+    setError('')
+    try {
+      const result = await api.login(username, password)
+      setToken(result.jwt_token)
+      onLogin()
+    } catch (err) {
+      setError('Invalid username or password')
+    }
+  }
+
   return (
     <div className="login-page">
       <h1>Annotation</h1>
       <p>Sign in to continue</p>
+
+      <form className="login-password-form" onSubmit={handlePasswordLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoFocus
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {error && <p className="login-error">{error}</p>}
+        <button type="submit">Sign in</button>
+      </form>
+
+      <div className="login-divider">or</div>
+
       <div ref={buttonRef} />
     </div>
   )

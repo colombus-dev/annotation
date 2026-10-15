@@ -1,9 +1,6 @@
-import datetime
-
 import fastapi
 import google.auth.transport.requests
 import google.oauth2.id_token
-import jose.jwt
 import pydantic
 
 import api.service.activity_log
@@ -53,17 +50,26 @@ async def auth_google(body: GoogleAuthRequest, store: api.service.store.StoreDep
 
     await api.service.activity_log.record(store, user.id, "user_logged_in")
 
-    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(
-        hours=settings.jwt_expire_hours
-    )
-    token = jose.jwt.encode(
-        {
-            "sub": str(user.id),
-            "username": user.username,
-            "name": info.get("name", ""),
-            "exp": exp,
-        },
-        settings.jwt_secret,
-        algorithm=settings.jwt_algorithm,
-    )
-    return {"jwt_token": token, "exp": int(exp.timestamp() * 1000)}
+    return api.service.auth.issue_token(user)
+
+
+class LoginRequest(pydantic.BaseModel):
+    username: str
+    password: str
+
+
+@router.post("/login")
+async def login(body: LoginRequest, store: api.service.store.StoreDep):
+    user = await api.service.auth.get_user_by_username(store, body.username)
+    if (
+        user is None
+        or user.password_hash is None
+        or not api.service.auth.verify_password(body.password, user.password_hash)
+    ):
+        raise fastapi.HTTPException(
+            status_code=401, detail="Invalid username or password"
+        )
+
+    await api.service.activity_log.record(store, user.id, "user_logged_in")
+
+    return api.service.auth.issue_token(user)

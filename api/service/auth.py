@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import secrets
 import typing
@@ -5,6 +6,7 @@ import typing
 import fastapi
 import fastapi.security
 import jose
+import jose.jwt
 import pydantic
 
 import api.service.annotation_definitions
@@ -58,11 +60,37 @@ def is_email_allowed(email: str) -> bool:
     return email in settings.allowed_google_emails_list
 
 
+def issue_token(user: User) -> dict[str, typing.Any]:
+    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(
+        hours=settings.jwt_expire_hours
+    )
+    token = jose.jwt.encode(
+        {
+            "sub": str(user.id),
+            "username": user.username,
+            "name": user.name,
+            "exp": exp,
+        },
+        settings.jwt_secret,
+        algorithm=settings.jwt_algorithm,
+    )
+    return {"jwt_token": token, "exp": int(exp.timestamp() * 1000)}
+
+
 async def get_user_by_id(store: api.service.store.Store, user_id: int) -> User | None:
     document = await store.get_document(api.service.store.user_key(str(user_id)))
     if document is None:
         return None
     return User(**document)
+
+
+async def get_user_by_username(
+    store: api.service.store.Store, username: str
+) -> User | None:
+    user_id = await store.get_value(api.service.store.user_username_index_key(username))
+    if user_id is None:
+        return None
+    return await get_user_by_id(store, int(user_id))
 
 
 async def get_or_create_admin(
