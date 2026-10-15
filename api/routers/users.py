@@ -40,7 +40,7 @@ async def list_users(
 
 class CreateMemberRequest(pydantic.BaseModel):
     username: str
-    name: str = ""
+    name: str
 
 
 class CreatedMember(pydantic.BaseModel):
@@ -58,6 +58,10 @@ async def create_member(
     if not username:
         raise fastapi.HTTPException(status_code=422, detail="Username is required")
 
+    name = body.name.strip()
+    if not name:
+        raise fastapi.HTTPException(status_code=422, detail="Full name is required")
+
     if await api.service.auth.get_user_by_username(store, username) is not None:
         raise fastapi.HTTPException(
             status_code=400, detail=f"Username '{username}' is already taken"
@@ -69,7 +73,7 @@ async def create_member(
         id=user_id,
         role="member",
         username=username,
-        name=body.name,
+        name=name,
         password_hash=api.service.auth.hash_password(password),
     )
     await store.set_document(
