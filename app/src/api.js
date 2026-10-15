@@ -23,7 +23,7 @@ async function request(url, options = {}) {
     headers['x-jwt-token'] = token
   }
   const response = await fetch(`${API_BASE}${url}`, { ...options, headers })
-  if (response.status === 401) {
+  if (response.status === 401 && token) {
     clearToken()
     window.location.reload()
     throw new Error('Session expired')
@@ -46,6 +46,13 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ credential }),
+    }),
+
+  login: (username, password) =>
+    request('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
     }),
 
   uploadSource: (file) => {
@@ -89,4 +96,22 @@ export const api = {
     }),
 
   getLogs: () => request('/logs'),
+
+  getCurrentUser: () => request('/users/me'),
+
+  getUsers: () => request('/users'),
+
+  createUser: (username, name) =>
+    request('/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, name }),
+    }),
+
+  regeneratePassword: (userId) =>
+    request(`/users/${userId}/regenerate-password`, { method: 'POST' }),
+
+  deleteUser: (userId) => request(`/users/${userId}`, { method: 'DELETE' }),
+
+  getUserLogs: (userId) => request(`/users/${userId}/logs`),
 }

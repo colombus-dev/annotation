@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { api, setToken } from '../api'
 import './Login.css'
 
 export function Login({ onLogin }) {
-  const buttonRef = useRef(null)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [googleReady, setGoogleReady] = useState(false)
 
   useEffect(() => {
     api.getAuthConfig().then(({ google_client_id }) => {
@@ -15,10 +18,7 @@ export function Login({ onLogin }) {
           client_id: google_client_id,
           callback: handleCredentialResponse,
         })
-        window.google.accounts.id.renderButton(buttonRef.current, {
-          theme: 'outline',
-          size: 'large',
-        })
+        setGoogleReady(true)
       }
       document.head.appendChild(script)
     })
@@ -34,11 +34,58 @@ export function Login({ onLogin }) {
     }
   }
 
+  function handleGoogleSignIn() {
+    window.google?.accounts.id.prompt()
+  }
+
+  async function handlePasswordLogin(e) {
+    e.preventDefault()
+    setError('')
+    try {
+      const result = await api.login(username, password)
+      setToken(result.jwt_token)
+      onLogin()
+    } catch (err) {
+      setError('Invalid username or password')
+    }
+  }
+
   return (
     <div className="login-page">
-      <h1>Annotation</h1>
+      <h1>Annotate</h1>
       <p>Sign in to continue</p>
-      <div ref={buttonRef} />
+
+      <form className="login-password-form" onSubmit={handlePasswordLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          autoFocus
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {error && <p className="login-error">{error}</p>}
+        <button type="submit">Sign in</button>
+      </form>
+
+      <p className="login-google-hint">
+        Admin?{' '}
+        <button
+          type="button"
+          className="login-google-link"
+          onClick={handleGoogleSignIn}
+          disabled={!googleReady}
+        >
+          Sign in with Google here
+        </button>
+      </p>
     </div>
   )
 }

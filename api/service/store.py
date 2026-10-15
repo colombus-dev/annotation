@@ -28,8 +28,12 @@ def user_key(user_id: str) -> str:
     return f"{PREFIX}:users:id:{user_id}"
 
 
-def user_email_index_key(email: str) -> str:
-    return f"{PREFIX}:users:email:{email}"
+def user_key_pattern() -> str:
+    return f"{PREFIX}:users:id:*"
+
+
+def user_username_index_key(username: str) -> str:
+    return f"{PREFIX}:users:username:{username}"
 
 
 def user_id_counter_key() -> str:
@@ -67,6 +71,9 @@ class Store:
 
     async def set_value(self, key: str, value: str) -> None:
         await self._client.set(key, value)
+
+    async def delete_value(self, key: str) -> None:
+        await self._client.delete(key)
 
     async def increment(self, key: str) -> int:
         return await self._client.incr(key)

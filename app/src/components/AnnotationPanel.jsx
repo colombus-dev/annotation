@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ReorderList } from '@/components/ui/reorder-list'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { GripVertical, TrashIcon } from 'lucide-react'
 import { api } from '../api'
 import useSeriesColors from '../hooks/useSeriesColors'
@@ -96,7 +97,6 @@ export function AnnotationPanel({
 
   async function handleDeleteValue(value) {
     if (!activeKey) return
-    if (!window.confirm(`Delete value "${value}"?`)) return
 
     setError(null)
     try {
@@ -175,10 +175,9 @@ export function AnnotationPanel({
         </button>
 
         <button
-          className="annotate-btn"
+          className="annotate-btn annotate-btn-destructive"
           onClick={handleClearAnnotation}
           disabled={!activeKey || loading}
-          style={{ background: '#ef4444', color: 'white' }}
         >
           Clear Annotation
         </button>
@@ -194,25 +193,29 @@ export function AnnotationPanel({
             withDragHandle={true}
           >
             {coloredValues.map((v) => (
-              <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-[#333] bg-[#121212] rounded-lg py-1.5 pl-3 pr-12 w-full">
+              <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-border bg-card rounded-lg py-1.5 pl-3 pr-12 w-full">
                 {/* Left side: Color and Text */}
                 <div className="flex items-center gap-2 flex-1">
                   <span
                     style={{ background: v.color, width: '12px', height: '12px', borderRadius: '2px' }}
                   />
-                  <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis">{v.name}</span>
+                  <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis text-foreground">{v.name}</span>
                 </div>
 
                 {/* Right side: Actions */}
                 <div className="flex items-center">
-                  <button
-                    className="text-[#a1a1aa] hover:text-white transition-colors flex"
-                    title="Delete value"
-                    aria-label={`Delete ${v.name}`}
-                    onClick={(e) => { e.stopPropagation(); handleDeleteValue(v.name); }}
-                  >
-                    <TrashIcon size={14} />
-                  </button>
+                  <ConfirmDialog
+                    trigger={<TrashIcon size={14} />}
+                    triggerProps={{
+                      className: 'text-muted-foreground hover:text-foreground transition-colors flex',
+                      title: 'Delete value',
+                      'aria-label': `Delete ${v.name}`,
+                      onClick: (e) => e.stopPropagation(),
+                    }}
+                    title="Delete value?"
+                    description={`This will permanently delete "${v.name}" from this annotation key. This cannot be undone.`}
+                    onConfirm={() => handleDeleteValue(v.name)}
+                  />
                 </div>
               </div>
             ))}
@@ -233,8 +236,8 @@ export function AnnotationPanel({
             </div>
           ) : (
             <button
-              className="annotate-btn"
-              style={{ marginTop: '12px', width: '100%', background: '#333' }}
+              className="annotate-btn annotate-btn-secondary"
+              style={{ marginTop: '12px', width: '100%' }}
               onClick={() => setIsAddingValue(true)}
               disabled={!activeKey}
             >

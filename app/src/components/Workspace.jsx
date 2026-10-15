@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { TrashIcon } from 'lucide-react'
 import { api } from '../api'
+import { ROUTES, sourcePath } from '../routes'
+import { ConfirmDialog } from './ui/confirm-dialog'
 import { FileUpload } from './FileUpload'
 import { SourceViewer } from './SourceViewer'
 import { AnnotationPanel } from './AnnotationPanel'
-import { ActivityLog } from './ActivityLog'
 
-export function Workspace({ authRequired, onLogout }) {
+export function Workspace() {
   const { sourceId } = useParams()
   const navigate = useNavigate()
 
@@ -17,7 +18,6 @@ export function Workspace({ authRequired, onLogout }) {
   const [activeKey, setActiveKey] = useState('')
   const [keyValues, setKeyValues] = useState([])
   const [refreshCounter, setRefreshCounter] = useState(0)
-  const [showActivityLog, setShowActivityLog] = useState(false)
 
   const refresh = () => setRefreshCounter((c) => c + 1)
 
@@ -41,7 +41,7 @@ export function Workspace({ authRequired, onLogout }) {
       })
       .catch((err) => {
         console.error(err)
-        if (!cancelled) navigate('/', { replace: true })
+        if (!cancelled) navigate(ROUTES.HOME, { replace: true })
       })
     return () => {
       cancelled = true
@@ -49,7 +49,7 @@ export function Workspace({ authRequired, onLogout }) {
   }, [sourceId])
 
   function handleSelectSource(id) {
-    navigate(`/source/${id}`)
+    navigate(sourcePath(id))
   }
 
   function handleUploadSuccess(results) {
@@ -57,17 +57,14 @@ export function Workspace({ authRequired, onLogout }) {
     const uploaded = Array.isArray(results) ? results : [results]
     const last = uploaded[uploaded.length - 1]
     if (last) {
-      navigate(`/source/${last.id}`)
+      navigate(sourcePath(last.id))
     }
   }
 
-  async function handleDeleteSource(e, id) {
-    e.stopPropagation()
-    if (!window.confirm('Delete this source?')) return
-
+  async function handleDeleteSource(id) {
     await api.deleteSource(id)
     if (selectedSource?.id === id) {
-      navigate('/', { replace: true })
+      navigate(ROUTES.HOME, { replace: true })
     }
     refresh()
   }
@@ -80,88 +77,56 @@ export function Workspace({ authRequired, onLogout }) {
   }
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Annotation</h1>
-        <button
-          className="activity-log-btn"
-          onClick={() => setShowActivityLog(true)}
-        >
-          Activity Log
-        </button>
-        {authRequired && (
-          <button className="logout-btn" onClick={onLogout}>Logout</button>
+    <div className="app-main">
+      <aside className="sidebar">
+        <FileUpload onUploadSuccess={handleUploadSuccess} />
+        <h2>Sources</h2>
+        {sources.length === 0 ? (
+          <p className="empty">No sources uploaded</p>
+        ) : (
+          <ul>
+            {sources.map((s) => (
+              <li key={s.id} className="source-item">
+                <button
+                  className={selectedSource?.id === s.id ? 'active' : ''}
+                  onClick={() => handleSelectSource(s.id)}
+                >
+                  {s.filename}
+                </button>
+                <ConfirmDialog
+                  trigger={<TrashIcon size={14} />}
+                  triggerProps={{
+                    className: 'delete-source-btn',
+                    title: 'Delete source',
+                    'aria-label': `Delete ${s.filename}`,
+                    onClick: (e) => e.stopPropagation(),
+                  }}
+                  title="Delete source?"
+                  description={`This will permanently delete "${s.filename}" and its annotations. This cannot be undone.`}
+                  onConfirm={() => handleDeleteSource(s.id)}
+                />
+              </li>
+            ))}
+          </ul>
         )}
-      </header>
-      {showActivityLog && (
-        <div
-          className="drawer-overlay"
-          onClick={() => setShowActivityLog(false)}
-        >
-          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="drawer-header">
-              <h2>Activity Log</h2>
-              <button
-                className="drawer-close"
-                aria-label="Close"
-                onClick={() => setShowActivityLog(false)}
-              >
-                &times;
-              </button>
-            </div>
-            <div className="drawer-body">
-              <ActivityLog refreshTrigger={refreshCounter} />
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="app-main">
-        <aside className="sidebar">
-          <FileUpload onUploadSuccess={handleUploadSuccess} />
-          <h2>Sources</h2>
-          {sources.length === 0 ? (
-            <p className="empty">No sources uploaded</p>
-          ) : (
-            <ul>
-              {sources.map((s) => (
-                <li key={s.id} className="source-item">
-                  <button
-                    className={selectedSource?.id === s.id ? 'active' : ''}
-                    onClick={() => handleSelectSource(s.id)}
-                  >
-                    {s.filename}
-                  </button>
-                  <button
-                    className="delete-source-btn"
-                    title="Delete source"
-                    aria-label={`Delete ${s.filename}`}
-                    onClick={(e) => handleDeleteSource(e, s.id)}
-                  >
-                    <TrashIcon size={14} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </aside>
-        <main className="editor-area">
-          <SourceViewer
-            source={selectedSource}
-            activeKey={activeKey}
-            keyValues={keyValues}
-            onSelectionChange={(start, end) => setSelection({ start, end })}
-          />
-        </main>
-        <AnnotationPanel
+      </aside>
+      <main className="editor-area">
+        <SourceViewer
           source={selectedSource}
-          selection={selection}
           activeKey={activeKey}
-          onKeyChange={setActiveKey}
           keyValues={keyValues}
-          onValuesChange={setKeyValues}
-          onAnnotated={handleAnnotated}
+          onSelectionChange={(start, end) => setSelection({ start, end })}
         />
-      </div>
+      </main>
+      <AnnotationPanel
+        source={selectedSource}
+        selection={selection}
+        activeKey={activeKey}
+        onKeyChange={setActiveKey}
+        keyValues={keyValues}
+        onValuesChange={setKeyValues}
+        onAnnotated={handleAnnotated}
+      />
     </div>
-  )
+  );
 }

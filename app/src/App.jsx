@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { api, isAuthenticated, clearToken } from './api'
 import { Login } from './components/Login'
+import { Layout } from './components/Layout'
 import { Workspace } from './components/Workspace'
+import { ROUTES } from './routes'
 import './App.css'
 
 function App() {
   const [authRequired, setAuthRequired] = useState(null)
   const [authed, setAuthed] = useState(isAuthenticated())
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
     api.getAuthConfig().then((config) => {
@@ -16,23 +19,47 @@ function App() {
     })
   }, [])
 
-  if (authRequired === null) return null
+  useEffect(() => {
+    if (!authed) {
+      setUser(null)
+      return
+    }
+    api.getCurrentUser().then(setUser).catch(console.error)
+  }, [authed])
 
-  if (authRequired && !authed) {
-    return <Login onLogin={() => setAuthed(true)} />
-  }
+  if (authRequired === null) return null
 
   function handleLogout() {
     clearToken()
     setAuthed(false)
   }
 
-  const workspace = <Workspace authRequired={authRequired} onLogout={handleLogout} />
-
   return (
     <Routes>
-      <Route path="/source/:sourceId" element={workspace} />
-      <Route path="/" element={workspace} />
+      <Route
+        path={ROUTES.LOGIN}
+        element={
+          authed ? (
+            <Navigate to={ROUTES.HOME} replace />
+          ) : (
+            <Login onLogin={() => setAuthed(true)} />
+          )
+        }
+      />
+      <Route
+        element={
+          authed ? (
+            <Layout user={user} authRequired={authRequired} onLogout={handleLogout} />
+          ) : (
+            <Navigate to={ROUTES.LOGIN} replace />
+          )
+        }
+      >
+        <Route path={ROUTES.SOURCE} element={<Workspace />} />
+        <Route path={ROUTES.HOME} element={<Workspace />} />
+        <Route path={ROUTES.TEAM} element={null} />
+        <Route path={ROUTES.ACTIVITY} element={null} />
+      </Route>
     </Routes>
   )
 }

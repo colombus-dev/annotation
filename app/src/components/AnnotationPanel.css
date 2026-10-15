@@ -2,8 +2,8 @@
   width: 280px;
   flex-shrink: 0;
   padding: 10px;
-  background: #1e1e1e;
-  border-left: 1px solid #333;
+  background: var(--card);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -12,14 +12,14 @@
 
 .annotation-panel h3 {
   margin: 0;
-  color: #e0e0e0;
+  color: var(--foreground);
   font-size: 13px;
   flex-shrink: 0;
 }
 
 .selection-info-value {
   font-size: 12px;
-  color: #e0e0e0;
+  color: var(--foreground);
   font-weight: 600;
 }
 
@@ -32,16 +32,16 @@
 
 .field label {
   font-size: 10px;
-  color: #888;
+  color: var(--muted-foreground);
   text-transform: uppercase;
 }
 
 .field select {
   padding: 4px 6px;
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: var(--muted);
+  border: 1px solid var(--border);
   border-radius: 4px;
-  color: #e0e0e0;
+  color: var(--foreground);
   font-size: 12px;
 }
 
@@ -66,19 +66,37 @@
   cursor: not-allowed;
 }
 
+.annotate-btn-destructive {
+  background: color-mix(in oklch, var(--destructive) 15%, transparent);
+  color: var(--destructive);
+}
+
+.annotate-btn-destructive:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--destructive) 25%, transparent);
+}
+
+.annotate-btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.annotate-btn-secondary:hover:not(:disabled) {
+  background: var(--muted);
+}
+
 .panel-error {
-  color: #fca5a5;
+  color: var(--destructive);
   font-size: 12px;
   font-weight: 500;
   padding: 6px 8px;
-  background: #3f1616;
-  border: 1px solid #7f1d1d;
+  background: color-mix(in oklch, var(--destructive) 15%, transparent);
+  border: 1px solid color-mix(in oklch, var(--destructive) 40%, transparent);
   border-radius: 4px;
   flex-shrink: 0;
 }
 
 .add-value {
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border);
   padding-top: 6px;
   flex-shrink: 0;
 }
@@ -91,29 +109,29 @@
 .add-value input {
   flex: 1;
   padding: 4px 6px;
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: var(--muted);
+  border: 1px solid var(--border);
   border-radius: 4px;
-  color: #e0e0e0;
+  color: var(--foreground);
   font-size: 11px;
 }
 
 .add-value button {
   padding: 4px 8px;
-  background: #333;
-  border: 1px solid #444;
+  background: var(--secondary);
+  border: 1px solid var(--border);
   border-radius: 4px;
-  color: #e0e0e0;
+  color: var(--secondary-foreground);
   cursor: pointer;
   font-size: 11px;
 }
 
 .add-value button:hover:not(:disabled) {
-  background: #444;
+  background: var(--muted);
 }
 
 .legend {
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border);
   padding-top: 6px;
   display: flex;
   flex-direction: column;
@@ -124,7 +142,7 @@
 .legend h4 {
   margin: 0 0 2px;
   font-size: 10px;
-  color: #888;
+  color: var(--muted-foreground);
   text-transform: uppercase;
   flex-shrink: 0;
 }
@@ -141,9 +159,9 @@
   width: 6px;
 }
 .legend-scroll-area::-webkit-scrollbar-track {
-  background: #1e1e1e;
+  background: var(--card);
 }
 .legend-scroll-area::-webkit-scrollbar-thumb {
-  background: #444;
+  background: var(--border);
   border-radius: 4px;
 }
