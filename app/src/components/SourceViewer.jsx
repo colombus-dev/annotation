@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { DownloadIcon } from 'lucide-react'
 import Editor from '@monaco-editor/react'
-import useSeriesColors, { SERIES_COLOR_PALETTE } from '../hooks/useSeriesColors'
+import useSeriesColors, {
+  ANNOTATION_HIGHLIGHT_ALPHA,
+  SERIES_COLOR_PALETTE,
+} from '../hooks/useSeriesColors'
 import { useTheme } from '../hooks/useTheme'
 import './SourceViewer.css'
 
@@ -52,7 +55,8 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
       document.head.appendChild(styleRef.current)
     }
     const rules = SERIES_COLOR_PALETTE.map(
-      (color, i) => `.annotation-color-${i} { background: ${color}40 !important; }`
+      (color, i) =>
+        `.annotation-color-${i} { background: ${color}${ANNOTATION_HIGHLIGHT_ALPHA} !important; }`
     ).join('\n')
     styleRef.current.textContent = rules
   }

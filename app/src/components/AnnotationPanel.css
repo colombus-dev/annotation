@@ -66,15 +66,6 @@
   cursor: not-allowed;
 }
 
-.annotate-btn-destructive {
-  background: color-mix(in oklch, var(--destructive) 15%, transparent);
-  color: var(--destructive);
-}
-
-.annotate-btn-destructive:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--destructive) 25%, transparent);
-}
-
 .annotate-btn-secondary {
   background: var(--secondary);
   color: var(--secondary-foreground);

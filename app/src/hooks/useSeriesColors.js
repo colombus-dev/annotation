@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 
+export const ANNOTATION_HIGHLIGHT_ALPHA = '40'
+
 export const SERIES_COLOR_PALETTE = [
   '#FF0000', // Rouge
   '#0000FF', // Bleu

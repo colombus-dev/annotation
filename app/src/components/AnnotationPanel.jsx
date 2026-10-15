@@ -4,7 +4,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { GripVertical, TrashIcon } from 'lucide-react'
 import { api } from '../api'
 import { useToast } from '../hooks/useToast'
-import useSeriesColors from '../hooks/useSeriesColors'
+import useSeriesColors, { ANNOTATION_HIGHLIGHT_ALPHA } from '../hooks/useSeriesColors'
 import './AnnotationPanel.css'
 
 
@@ -172,7 +172,7 @@ export function AnnotationPanel({
         </button>
 
         <button
-          className="annotate-btn annotate-btn-destructive"
+          className="annotate-btn annotate-btn-secondary"
           onClick={handleClearAnnotation}
           disabled={!activeKey || loading}
         >
@@ -190,12 +190,14 @@ export function AnnotationPanel({
             withDragHandle={true}
           >
             {coloredValues.map((v) => (
-              <div key={v.name} data-name={v.name} className="flex items-center justify-between gap-2 border border-border bg-card rounded-lg py-1.5 pl-3 pr-12 w-full">
-                {/* Left side: Color and Text */}
+              <div
+                key={v.name}
+                data-name={v.name}
+                className="flex items-center justify-between gap-2 border border-border rounded-lg py-1.5 pl-3 pr-12 w-full"
+                style={{ background: `${v.color}${ANNOTATION_HIGHLIGHT_ALPHA}` }}
+              >
+                {/* Left side: Text */}
                 <div className="flex items-center gap-2 flex-1">
-                  <span
-                    style={{ background: v.color, width: '12px', height: '12px', borderRadius: '2px' }}
-                  />
                   <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis text-foreground">{v.name}</span>
                 </div>
 
