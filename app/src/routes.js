@@ -9,3 +9,7 @@ export const ROUTES = {
 export function sourcePath(sourceId) {
   return `/source/${sourceId}`
 }
+
+export function activityPath(userId) {
+  return `${ROUTES.ACTIVITY}?user=${userId}`
+}

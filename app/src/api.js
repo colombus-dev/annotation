@@ -96,8 +96,6 @@ export const api = {
       body: JSON.stringify(values),
     }),
 
-  getLogs: () => request('/logs'),
-
   getCurrentUser: () => request('/users/me'),
 
   getUsers: () => request('/users'),
@@ -115,4 +113,6 @@ export const api = {
   deleteUser: (userId) => request(`/users/${userId}`, { method: 'DELETE' }),
 
   getUserLogs: (userId) => request(`/users/${userId}/logs`),
+
+  getUserLogsDebuggingSpy: (userId) => request(`/users/${userId}/logs/debuggingspy`),
 }

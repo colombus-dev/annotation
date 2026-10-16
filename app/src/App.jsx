@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { api, isAuthenticated, clearToken } from './api'
+import { Activity } from './components/Activity'
 import { Login } from './components/Login'
 import { Layout } from './components/Layout'
 import { Team } from './components/Team'
@@ -66,7 +67,7 @@ function App() {
         />
         <Route
           path={ROUTES.ACTIVITY}
-          element={isAdmin ? null : <Navigate to={ROUTES.HOME} replace />}
+          element={isAdmin ? <Activity /> : <Navigate to={ROUTES.HOME} replace />}
         />
         <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
       </Route>

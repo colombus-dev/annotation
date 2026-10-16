@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CheckIcon,
   CopyIcon,
+  HistoryIcon,
   KeyRoundIcon,
   PlusIcon,
   SearchIcon,
@@ -9,6 +11,7 @@ import {
 } from 'lucide-react'
 import { api } from '../api'
 import { useToast } from '../hooks/useToast'
+import { activityPath } from '../routes'
 import { roleLabel } from './UserAvatar'
 import { ConfirmDialog } from './ui/confirm-dialog'
 import { Badge } from './ui/badge'
@@ -31,6 +34,7 @@ const SORT_ACCESSORS = {
 
 
 export function Team() {
+  const navigate = useNavigate()
   const [users, setUsers] = useState([])
   const [currentUser, setCurrentUser] = useState(null)
   const [loadError, setLoadError] = useState('')
@@ -222,38 +226,49 @@ export function Team() {
                   {new Date(u.created_at).toLocaleDateString('fr')}
                 </TableCell>
                 <TableCell className="text-right">
-                  {!isSelf && (
-                    <div className="flex items-center justify-end gap-1">
-                      {u.role === 'member' && (
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      type="button"
+                      title="Activity history"
+                      aria-label={`View activity history for ${u.username}`}
+                      onClick={() => navigate(activityPath(u.id))}
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <HistoryIcon size={14} />
+                    </button>
+                    {!isSelf && (
+                      <>
+                        {u.role === 'member' && (
+                          <ConfirmDialog
+                            trigger={<KeyRoundIcon size={14} />}
+                            triggerProps={{
+                              className:
+                                'rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground',
+                              title: 'Regenerate password',
+                              'aria-label': `Regenerate password for ${u.username}`,
+                            }}
+                            title="Regenerate password?"
+                            description={`This will invalidate "${u.username}"'s current password. They won't be able to sign in until you share the new one with them.`}
+                            confirmLabel="Regenerate"
+                            variant="primary"
+                            onConfirm={() => handleRegeneratePassword(u)}
+                          />
+                        )}
                         <ConfirmDialog
-                          trigger={<KeyRoundIcon size={14} />}
+                          trigger={<TrashIcon size={14} />}
                           triggerProps={{
                             className:
                               'rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground',
-                            title: 'Regenerate password',
-                            'aria-label': `Regenerate password for ${u.username}`,
+                            title: 'Delete user',
+                            'aria-label': `Delete ${u.username}`,
                           }}
-                          title="Regenerate password?"
-                          description={`This will invalidate "${u.username}"'s current password. They won't be able to sign in until you share the new one with them.`}
-                          confirmLabel="Regenerate"
-                          variant="primary"
-                          onConfirm={() => handleRegeneratePassword(u)}
+                          title="Delete user?"
+                          description={`This will permanently delete "${u.username}" and all of their sources, annotations, and activity logs. This cannot be undone.`}
+                          onConfirm={() => handleDelete(u.id)}
                         />
-                      )}
-                      <ConfirmDialog
-                        trigger={<TrashIcon size={14} />}
-                        triggerProps={{
-                          className:
-                            'rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground',
-                          title: 'Delete user',
-                          'aria-label': `Delete ${u.username}`,
-                        }}
-                        title="Delete user?"
-                        description={`This will permanently delete "${u.username}" and all of their sources, annotations, and activity logs. This cannot be undone.`}
-                        onConfirm={() => handleDelete(u.id)}
-                      />
-                    </div>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )
