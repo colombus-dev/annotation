@@ -1,9 +1,12 @@
+import typing
+
 import fastapi
 import pydantic
 
 import api.service.activity_log
 import api.service.annotation_definitions
 import api.service.auth
+import api.service.debuggingspy
 import api.service.store
 
 router = fastapi.APIRouter(prefix="/api/users", tags=["users"])
@@ -176,3 +179,12 @@ async def get_user_logs(
     admin: api.service.auth.AdminDep,
 ) -> list[api.service.activity_log.LogEntry]:
     return await api.service.activity_log.list_entries(store, user_id)
+
+
+@router.get("/{user_id}/logs/debuggingspy", status_code=200)
+async def get_user_logs_debuggingspy(
+    user_id: int,
+    store: api.service.store.StoreDep,
+    admin: api.service.auth.AdminDep,
+) -> list[dict[str, typing.Any]]:
+    return await api.service.debuggingspy.list_events(store, user_id)
