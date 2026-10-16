@@ -47,11 +47,12 @@ def _record_name(action: str) -> str:
 
 
 def to_event(entry: api.service.activity_log.LogEntry) -> dict[str, typing.Any]:
+    source_id = entry.details.get("source_id")
     attributes: dict[str, typing.Any] = {
         "dateTime": _pharo_date_and_time(
             datetime.datetime.fromisoformat(entry.timestamp)
         ),
-        "windowId": entry.details.get("source_id"),
+        "windowId": _pharo_uuid(uuid_lib.UUID(source_id)) if source_id else None,
         "uuid": _pharo_uuid(uuid_lib.uuid5(uuid_lib.NAMESPACE_OID, entry.id)),
     }
     attributes.update(entry.details)
