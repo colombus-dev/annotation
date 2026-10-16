@@ -11,13 +11,7 @@ def _wrap(name: str, attributes: dict[str, typing.Any]) -> dict[str, typing.Any]
 
 
 def _julian_day_number(date: datetime.date) -> int:
-    # Fliegel & Van Flandern algorithm, matches Pharo's DateAndTime>>julianDayNumber.
-    a = (14 - date.month) // 12
-    y = date.year + 4800 - a
-    m = date.month + 12 * a - 3
-    return (
-        date.day + (153 * m + 2) // 5 + 365 * y + y // 4 - y // 100 + y // 400 - 32045
-    )
+    return date.toordinal() + 1721425
 
 
 def _pharo_duration(seconds: int, nanos: int = 0) -> dict[str, typing.Any]:
