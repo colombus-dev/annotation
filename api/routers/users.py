@@ -140,7 +140,11 @@ async def regenerate_password(
     )
 
     await api.service.activity_log.record(
-        store, admin.id, "user_password_regenerated", target_user_id=user.id
+        store,
+        admin.id,
+        "user_password_regenerated",
+        target_user_id=user.id,
+        username=user.username,
     )
 
     return RegeneratedPassword(password=password)
