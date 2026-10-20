@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api, setToken } from '../api'
 import { APP_NAME } from '../constants'
 import './Login.css'
 
 export function Login({ onLogin }) {
+  const buttonRef = useRef(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [googleReady, setGoogleReady] = useState(false)
 
   useEffect(() => {
     api.getAuthConfig().then(({ google_client_id }) => {
@@ -19,7 +19,12 @@ export function Login({ onLogin }) {
           client_id: google_client_id,
           callback: handleCredentialResponse,
         })
-        setGoogleReady(true)
+        window.google.accounts.id.renderButton(buttonRef.current, {
+          theme: 'outline',
+          size: 'small',
+          shape: 'pill',
+          text: 'signin',
+        })
       }
       document.head.appendChild(script)
     })
@@ -33,10 +38,6 @@ export function Login({ onLogin }) {
     } catch (err) {
       console.error('Login failed:', err)
     }
-  }
-
-  function handleGoogleSignIn() {
-    window.google?.accounts.id.prompt()
   }
 
   async function handlePasswordLogin(e) {
@@ -76,17 +77,10 @@ export function Login({ onLogin }) {
         <button type="submit">Sign in</button>
       </form>
 
-      <p className="login-google-hint">
-        Admin?{' '}
-        <button
-          type="button"
-          className="login-google-link"
-          onClick={handleGoogleSignIn}
-          disabled={!googleReady}
-        >
-          Sign in with Google here
-        </button>
-      </p>
+      <div className="login-google-hint">
+        <span>Are you an admin?</span>
+        <div ref={buttonRef} />
+      </div>
     </div>
   )
 }
