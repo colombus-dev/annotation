@@ -2,6 +2,7 @@ import {
   CodeIcon,
   HistoryIcon,
   LogOutIcon,
+  MenuIcon,
   MoonIcon,
   MoreVerticalIcon,
   SunIcon,
@@ -23,17 +24,31 @@ const NAV_ITEMS = [
   { to: ROUTES.ACTIVITY, label: 'Activity History', icon: HistoryIcon, adminOnly: true },
 ]
 
-export function Navbar({ user, authRequired, onLogout }) {
+export function Navbar({ user, authRequired, onLogout, collapsed, onToggleCollapse }) {
   const isAdmin = user?.role === 'admin'
   const [theme, setTheme] = useTheme()
   const isDark = theme === 'dark'
 
   return (
-    <div className="flex h-full w-64 flex-col gap-6 p-4">
-      <div className="px-1">
-        <span className="text-lg font-semibold tracking-tight text-primary">
-          {APP_NAME}
-        </span>
+    <div className={cn('flex h-full flex-col gap-6 p-4', collapsed && 'px-2')}>
+      <div className="flex items-center justify-between gap-2 px-1">
+        {!collapsed && (
+          <span className="truncate text-lg font-semibold tracking-tight text-primary">
+            {APP_NAME}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className={cn(
+            'flex shrink-0 items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground',
+            collapsed && 'mx-auto'
+          )}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <MenuIcon size={18} />
+        </button>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
@@ -42,32 +57,43 @@ export function Navbar({ user, authRequired, onLogout }) {
             key={item.to}
             to={item.to}
             end={item.to === ROUTES.HOME}
+            title={collapsed ? item.label : undefined}
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground',
+                collapsed && 'justify-center px-2',
                 isActive && 'bg-muted text-foreground'
               )
             }
           >
             <item.icon size={16} />
-            {item.label}
+            {!collapsed && item.label}
           </NavLink>
         ))}
       </nav>
 
       {user && (
         <Popover>
-          <PopoverTrigger className="flex items-center gap-2 rounded-md p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50">
+          <PopoverTrigger
+            className={cn(
+              'flex items-center gap-2 rounded-md p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50',
+              collapsed && 'justify-center'
+            )}
+          >
             <UserAvatar user={user} />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-medium">
-                {user.name || user.username}
-              </span>
-              <span className="truncate text-xs text-muted-foreground">
-                {roleLabel(user.role)}
-              </span>
-            </div>
-            <MoreVerticalIcon size={16} className="shrink-0 text-muted-foreground" />
+            {!collapsed && (
+              <>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-sm font-medium">
+                    {user.name || user.username}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {roleLabel(user.role)}
+                  </span>
+                </div>
+                <MoreVerticalIcon size={16} className="shrink-0 text-muted-foreground" />
+              </>
+            )}
           </PopoverTrigger>
           <PopoverContent side="right" align="end">
             <div className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm">
