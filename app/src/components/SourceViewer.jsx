@@ -140,7 +140,7 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange, 
     actionsRef.current = [
       editor.addAction({
         id: `annotation.${activeKey}.unset`,
-        label: `${tick(currentValue === null)}${keyLabel}: Not annotated`,
+        label: `${tick(currentValue === null)}${keyLabel}: Not Annotated`,
         contextMenuGroupId: groupId,
         contextMenuOrder: 0,
         run: () => onApply(null),

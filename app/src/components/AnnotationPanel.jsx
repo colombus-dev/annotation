@@ -101,7 +101,7 @@ export function AnnotationPanel({
             onKeyDown={(e) => e.key === 'Enter' && onApply(null)}
             className="flex items-center gap-2 rounded-lg border-2 border-dashed border-border bg-transparent py-1.5 px-3 w-full cursor-pointer mb-1 text-foreground transition-colors hover:bg-muted"
           >
-            <span className="font-medium text-[11px]">Not annotated</span>
+            <span className="font-medium text-[11px]">Not Annotated</span>
           </div>
 
           <ReorderList
@@ -114,24 +114,24 @@ export function AnnotationPanel({
               <div
                 key={v.name}
                 data-name={v.name}
-                onClick={() => onApply(v.name)}
-                className="flex items-center justify-between gap-2 border border-border rounded-lg py-1.5 pl-3 pr-12 w-full cursor-pointer transition hover:brightness-90"
+                className="flex items-center justify-between gap-2 border border-border rounded-lg pr-12 w-full"
                 style={{ background: `${v.color}${ANNOTATION_HIGHLIGHT_ALPHA}` }}
               >
-                {/* Left side: Text */}
-                <div className="flex items-center gap-2 flex-1">
+                <button
+                  type="button"
+                  onClick={() => onApply(v.name)}
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-l-lg py-1.5 pl-3 pr-2 text-left cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10"
+                >
                   <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis text-foreground">{v.name}</span>
-                </div>
+                </button>
 
-                {/* Right side: Actions */}
-                <div className="flex items-center">
+                <div className="flex items-center pr-2">
                   <ConfirmDialog
                     trigger={<TrashIcon size={14} />}
                     triggerProps={{
                       className: 'text-muted-foreground hover:text-foreground transition-colors flex',
                       title: 'Delete value',
                       'aria-label': `Delete ${v.name}`,
-                      onClick: (e) => e.stopPropagation(),
                     }}
                     title="Delete value?"
                     description={`This will permanently delete "${v.name}" from this annotation key. This cannot be undone.`}

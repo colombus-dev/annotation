@@ -107,8 +107,9 @@ async def delete_key_value(
             status_code=404, detail=f"Unknown value '{value}' for key '{key}'"
         )
 
-    await store.delete_document_paths(
-        api.service.store.annotation_definitions_key(user_id), [f"$.{key}.{value}"]
+    del definitions[key][value]
+    await store.set_document(
+        api.service.store.annotation_definitions_key(user_id), definitions
     )
 
     await api.service.activity_log.record(

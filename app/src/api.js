@@ -77,20 +77,22 @@ export const api = {
 
   getAnnotationKeys: () => request('/annotation/keys'),
 
-  getKeyValues: (key) => request(`/annotation/keys/${key}`),
+  getKeyValues: (key) => request(`/annotation/keys/${encodeURIComponent(key)}`),
 
   createKeyValue: (key, name) =>
-    request(`/annotation/keys/${key}`, {
+    request(`/annotation/keys/${encodeURIComponent(key)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
     }),
 
   deleteKeyValue: (key, value) =>
-    request(`/annotation/keys/${key}/${value}`, { method: 'DELETE' }),
+    request(`/annotation/keys/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
+      method: 'DELETE',
+    }),
 
   reorderKeyValues: (key, values) =>
-    request(`/annotation/keys/${key}/reorder`, {
+    request(`/annotation/keys/${encodeURIComponent(key)}/reorder`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values),
