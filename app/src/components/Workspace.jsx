@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { TrashIcon } from 'lucide-react'
 import { api } from '../api'
@@ -22,6 +22,15 @@ export function Workspace() {
   const [refreshCounter, setRefreshCounter] = useState(0)
 
   const refresh = () => setRefreshCounter((c) => c + 1)
+
+  const selectionRef = useRef(selection)
+  const selectedSourceRef = useRef(selectedSource)
+  const activeKeyRef = useRef(activeKey)
+  useEffect(() => {
+    selectionRef.current = selection
+    selectedSourceRef.current = selectedSource
+    activeKeyRef.current = activeKey
+  }, [selection, selectedSource, activeKey])
 
   useEffect(() => {
     api.getSources().then(setSources).catch(console.error)
@@ -75,12 +84,20 @@ export function Workspace() {
     }
   }
 
-  async function handleAnnotated() {
-    if (!selectedSource) return
-    const updated = await api.getSource(selectedSource.id, { log: false })
-    setSelectedSource(updated)
-    refresh()
-  }
+  const handleApplyValue = useCallback(async (value) => {
+    const source = selectedSourceRef.current
+    if (!source) return
+    const { start, end } = selectionRef.current
+    const key = activeKeyRef.current
+    try {
+      await api.annotateSource(source.id, start, end, key, value)
+      const updated = await api.getSource(source.id, { log: false })
+      setSelectedSource(updated)
+      refresh()
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }, [])
 
   return (
     <div className="app-main">
@@ -122,6 +139,7 @@ export function Workspace() {
           activeKey={activeKey}
           keyValues={keyValues}
           onSelectionChange={(start, end) => setSelection({ start, end })}
+          onApply={handleApplyValue}
         />
       </main>
       <AnnotationPanel
@@ -131,7 +149,7 @@ export function Workspace() {
         onKeyChange={setActiveKey}
         keyValues={keyValues}
         onValuesChange={setKeyValues}
-        onAnnotated={handleAnnotated}
+        onApply={handleApplyValue}
       />
     </div>
   );

@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { ReorderList } from '@/components/ui/reorder-list'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { GripVertical, TrashIcon } from 'lucide-react'
+import { TrashIcon } from 'lucide-react'
 import { api } from '../api'
 import { useToast } from '../hooks/useToast'
 import useSeriesColors, { ANNOTATION_HIGHLIGHT_ALPHA } from '../hooks/useSeriesColors'
 import './AnnotationPanel.css'
-
-
 
 export function AnnotationPanel({
   source,
@@ -16,19 +14,12 @@ export function AnnotationPanel({
   onKeyChange,
   keyValues,
   onValuesChange,
-  onAnnotated,
+  onApply,
 }) {
-  const [keys, setKeys] = useState([])
-  const [selectedValue, setSelectedValue] = useState('')
   const [newValue, setNewValue] = useState('')
   const [isAddingValue, setIsAddingValue] = useState(false)
-  const [loading, setLoading] = useState(false)
   const coloredValues = useSeriesColors(keyValues)
   const toast = useToast()
-
-  useEffect(() => {
-    api.getAnnotationKeys().then(setKeys).catch(console.error)
-  }, [])
 
   useEffect(() => {
     if (!activeKey) {
@@ -41,58 +32,11 @@ export function AnnotationPanel({
       onValuesChange([])
       return
     }
-    api.getKeyValues(activeKey).then(onValuesChange).catch(console.error)
+    api
+      .getKeyValues(activeKey)
+      .then(onValuesChange)
+      .catch(() => onValuesChange([]))
   }, [activeKey])
-
-  useEffect(() => {
-    if (keyValues.length > 0 && !selectedValue) {
-      setSelectedValue(keyValues[0].name)
-    }
-  }, [keyValues, selectedValue])
-
-  function handleApplyAnnotation() {
-    if (!source || !activeKey || !selectedValue) return
-    setLoading(true)
-
-    api.annotateSource(
-      source.id,
-      selection.start,
-      selection.end,
-      activeKey,
-      selectedValue
-    )
-      .then(() => {
-        onAnnotated()
-      })
-      .catch((err) => {
-        toast.error(err.message)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }
-
-  function handleClearAnnotation() {
-    if (!source || !activeKey) return
-    setLoading(true)
-
-    api.annotateSource(
-      source.id,
-      selection.start,
-      selection.end,
-      activeKey,
-      null
-    )
-      .then(() => {
-        onAnnotated()
-      })
-      .catch((err) => {
-        toast.error(err.message)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }
 
   async function handleDeleteValue(value) {
     if (!activeKey) return
@@ -101,7 +45,6 @@ export function AnnotationPanel({
       await api.deleteKeyValue(activeKey, value)
       const updated = await api.getKeyValues(activeKey)
       onValuesChange(updated)
-      if (selectedValue === value) setSelectedValue('')
     } catch (err) {
       toast.error(err.message)
     }
@@ -148,41 +91,19 @@ export function AnnotationPanel({
         </span>
       </div>
 
-      <div className="field">
-        <label>Value</label>
-        <select
-          value={selectedValue}
-          onChange={(e) => setSelectedValue(e.target.value)}
-          disabled={!activeKey}
-        >
-          {keyValues.length === 0 && <option value="">No options available</option>}
-          {keyValues.map((v) => (
-            <option key={v.name} value={v.name}>{v.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
-        <button
-          className="annotate-btn"
-          onClick={handleApplyAnnotation}
-          disabled={!activeKey || !selectedValue || loading}
-        >
-          {loading ? 'Applying…' : 'Apply Annotation'}
-        </button>
-
-        <button
-          className="annotate-btn annotate-btn-secondary"
-          onClick={handleClearAnnotation}
-          disabled={!activeKey || loading}
-        >
-          Clear Annotation
-        </button>
-      </div>
-
       <div className="legend">
-        <h4>Legend</h4>
+        <h4>Pipeline Steps</h4>
         <div className="legend-scroll-area">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onApply(null)}
+            onKeyDown={(e) => e.key === 'Enter' && onApply(null)}
+            className="flex items-center gap-2 rounded-lg border-2 border-dashed border-border bg-transparent py-1.5 px-3 w-full cursor-pointer mb-1 text-foreground transition-colors hover:bg-muted"
+          >
+            <span className="font-medium text-[11px]">Not annotated</span>
+          </div>
+
           <ReorderList
             onReorderFinish={handleReorderFinish}
             className="legend-list"
@@ -193,7 +114,8 @@ export function AnnotationPanel({
               <div
                 key={v.name}
                 data-name={v.name}
-                className="flex items-center justify-between gap-2 border border-border rounded-lg py-1.5 pl-3 pr-12 w-full"
+                onClick={() => onApply(v.name)}
+                className="flex items-center justify-between gap-2 border border-border rounded-lg py-1.5 pl-3 pr-12 w-full cursor-pointer transition hover:brightness-90"
                 style={{ background: `${v.color}${ANNOTATION_HIGHLIGHT_ALPHA}` }}
               >
                 {/* Left side: Text */}

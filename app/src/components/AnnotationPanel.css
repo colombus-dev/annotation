@@ -36,15 +36,6 @@
   text-transform: uppercase;
 }
 
-.field select {
-  padding: 4px 6px;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--foreground);
-  font-size: 12px;
-}
-
 .annotate-btn {
   padding: 6px;
   background: var(--primary);
@@ -112,8 +103,6 @@
 }
 
 .legend {
-  border-top: 1px solid var(--border);
-  padding-top: 6px;
   display: flex;
   flex-direction: column;
   flex: 1;

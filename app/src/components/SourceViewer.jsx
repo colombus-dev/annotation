@@ -8,16 +8,30 @@ import useSeriesColors, {
 import { useTheme } from '../hooks/useTheme'
 import './SourceViewer.css'
 
-export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }) {
+export function SourceViewer({ source, activeKey, keyValues, onSelectionChange, onApply }) {
   const [theme] = useTheme()
   const editorRef = useRef(null)
   const decorationsRef = useRef([])
   const styleRef = useRef(null)
+  const actionsRef = useRef([])
   const coloredValues = useSeriesColors(keyValues)
   const colorIndexByValue = useMemo(
     () => Object.fromEntries(coloredValues.map((v) => [v.name, v.colorIndex])),
     [coloredValues]
   )
+
+  const sourceRef = useRef(source)
+  const activeKeyRef = useRef(activeKey)
+  const keyValuesRef = useRef(keyValues)
+  const onApplyRef = useRef(onApply)
+  const colorIndexByValueRef = useRef(colorIndexByValue)
+  useEffect(() => {
+    sourceRef.current = source
+    activeKeyRef.current = activeKey
+    keyValuesRef.current = keyValues
+    onApplyRef.current = onApply
+    colorIndexByValueRef.current = colorIndexByValue
+  }, [source, activeKey, keyValues, onApply, colorIndexByValue])
 
   function handleDownloadJson() {
     if (!source) return
@@ -41,12 +55,26 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
   function handleEditorMount(editor) {
     editorRef.current = editor
 
-    editor.onDidChangeCursorSelection((e) => {
-      const sel = e.selection
-      onSelectionChange(sel.startLineNumber - 1, sel.endLineNumber - 1)
+    editor.onDidChangeCursorSelection(() => {
+      const selection = editor.getSelection()
+      onSelectionChange(selection.startLineNumber - 1, selection.endLineNumber - 1)
+      syncEditor()
     })
 
-    applyDecorations()
+    syncEditor()
+  }
+
+  function getUniformAnnotation(source, activeKey, startLine, endLine) {
+    let value
+    for (let i = startLine; i <= endLine; i++) {
+      const lineValue = source.lines[i]?.annotations?.[activeKey] ?? null
+      if (value === undefined) {
+        value = lineValue
+      } else if (value !== lineValue) {
+        return undefined
+      }
+    }
+    return value
   }
 
   function injectStyles() {
@@ -61,16 +89,14 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
     styleRef.current.textContent = rules
   }
 
-  function applyDecorations() {
-    const editor = editorRef.current
-    if (!editor || !source || !activeKey) {
-      if (editor) {
-        decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [])
-      }
+  function applyDecorations(editor, source, activeKey) {
+    if (!source || !activeKey) {
+      decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [])
       return
     }
 
     injectStyles()
+    const colorIndexByValue = colorIndexByValueRef.current
 
     const newDecorations = []
     source.lines.forEach((line) => {
@@ -97,8 +123,55 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
     )
   }
 
+  function registerAnnotateActions(editor, source, activeKey, keyValues, onApply) {
+    actionsRef.current.forEach((action) => action.dispose())
+    actionsRef.current = []
+    if (!source || !activeKey) return
+
+    const selection = editor.getSelection()
+    const startLine = selection ? selection.startLineNumber - 1 : 0
+    const endLine = selection ? selection.endLineNumber - 1 : 0
+    const currentValue = getUniformAnnotation(source, activeKey, startLine, endLine)
+
+    const groupId = `annotation.${activeKey}`
+    const keyLabel = 'Pipeline Step'
+    const tick = (checked) => (checked ? '✓ ' : '   ')
+
+    actionsRef.current = [
+      editor.addAction({
+        id: `annotation.${activeKey}.unset`,
+        label: `${tick(currentValue === null)}${keyLabel}: Not annotated`,
+        contextMenuGroupId: groupId,
+        contextMenuOrder: 0,
+        run: () => onApply(null),
+      }),
+      ...keyValues.map((v, i) =>
+        editor.addAction({
+          id: `annotation.${activeKey}.${v.name}`,
+          label: `${tick(currentValue === v.name)}${keyLabel}: ${v.name}`,
+          contextMenuGroupId: groupId,
+          contextMenuOrder: i + 1,
+          run: () => onApply(v.name),
+        })
+      ),
+    ]
+  }
+
+  function syncEditor() {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const source = sourceRef.current
+    const activeKey = activeKeyRef.current
+    const keyValues = keyValuesRef.current
+    const onApply = onApplyRef.current
+
+    applyDecorations(editor, source, activeKey)
+    registerAnnotateActions(editor, source, activeKey, keyValues, onApply)
+  }
+
   useEffect(() => {
-    applyDecorations()
+    syncEditor()
   }, [source, activeKey, keyValues])
 
   useEffect(() => {
@@ -106,6 +179,7 @@ export function SourceViewer({ source, activeKey, keyValues, onSelectionChange }
       if (styleRef.current) {
         styleRef.current.remove()
       }
+      actionsRef.current.forEach((action) => action.dispose())
     }
   }, [])
 
