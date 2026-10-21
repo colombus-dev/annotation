@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar'
 import { cn } from '@/lib/utils'
 
 export function Layout({ user, authRequired, onLogout }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
 
   return (
     <div className="flex h-screen">

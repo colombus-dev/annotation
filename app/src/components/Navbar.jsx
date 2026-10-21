@@ -8,7 +8,7 @@ import {
   SunIcon,
   UsersIcon,
 } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
@@ -28,6 +28,7 @@ export function Navbar({ user, authRequired, onLogout, collapsed, onToggleCollap
   const isAdmin = user?.role === 'admin'
   const [theme, setTheme] = useTheme()
   const isDark = theme === 'dark'
+  const location = useLocation()
 
   return (
     <div className={cn('flex h-full flex-col gap-6 p-4', collapsed && 'px-2')}>
@@ -52,24 +53,28 @@ export function Navbar({ user, authRequired, onLogout, collapsed, onToggleCollap
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
-        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === ROUTES.HOME}
-            title={collapsed ? item.label : undefined}
-            className={({ isActive }) =>
-              cn(
+        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => {
+          const isActive =
+            item.to === ROUTES.HOME
+              ? location.pathname === ROUTES.HOME || location.pathname.startsWith('/source/')
+              : location.pathname.startsWith(item.to)
+
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              title={collapsed ? item.label : undefined}
+              className={cn(
                 'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground',
                 collapsed && 'justify-center px-2',
-                isActive && 'bg-muted text-foreground'
-              )
-            }
-          >
-            <item.icon size={16} />
-            {!collapsed && item.label}
-          </NavLink>
-        ))}
+                isActive && 'bg-muted text-foreground outline outline-2 outline-primary'
+              )}
+            >
+              <item.icon size={16} />
+              {!collapsed && item.label}
+            </NavLink>
+          )
+        })}
       </nav>
 
       {user && (
