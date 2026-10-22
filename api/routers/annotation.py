@@ -70,6 +70,7 @@ async def post_key_value(
     max_order = max([v.get("order", 0) for v in definitions[key].values()], default=-1)
     record = api.service.annotation_definitions.ValueRecord(
         name=body.name,
+        definition="",
         creation_mode=api.service.annotation_definitions.CreationMode.MANUAL,
         order=max_order + 1,
     )
