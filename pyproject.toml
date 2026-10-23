@@ -23,7 +23,13 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pre-commit>=4.6.0",
+    "pyright>=1.1.414",
 ]
 
 [tool.fastapi]
 entrypoint = "api.main:app"
+
+[tool.pyright]
+include = ["api"]
+venvPath = "."
+venv = ".venv"

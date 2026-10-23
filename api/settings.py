@@ -32,4 +32,4 @@ class Settings(pydantic_settings.BaseSettings):
 
 @functools.lru_cache()
 def get() -> Settings:
-    return Settings()
+    return Settings()  # pyright: ignore[reportCallIssue]
