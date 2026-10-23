@@ -7,6 +7,7 @@ REST API to upload and annotate ML source code line by line.
 ```bash
 git clone git@github.com:colombus-dev/annotate.git && cd annotate
 cp .env.sample.prod .env # then edit .env
+docker network create colombus-net
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 

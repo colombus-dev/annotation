@@ -13,6 +13,7 @@ class CreationMode(str, enum.Enum):
 
 class ValueRecord(pydantic.BaseModel):
     name: str
+    definition: str
     creation_mode: CreationMode
     order: int = 0
 
@@ -33,7 +34,10 @@ def _create_key(definitions: dict, enum_cls: type[enum.Enum]) -> None:
     definitions[key] = {}
     for i, member in enumerate(enum_cls):
         record = ValueRecord(
-            name=member.value, creation_mode=CreationMode.AUTOMATIC, order=i
+            name=member.value[0],
+            definition=member.value[1],
+            creation_mode=CreationMode.AUTOMATIC,
+            order=i,
         )
         definitions[key][record.name] = record.model_dump()
 

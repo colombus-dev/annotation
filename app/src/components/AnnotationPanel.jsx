@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react'
 import { ReorderList } from '@/components/ui/reorder-list'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { TrashIcon } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { TrashIcon, CircleQuestionMark } from 'lucide-react'
 import { api } from '../api'
 import { useToast } from '../hooks/useToast'
 import useSeriesColors, { ANNOTATION_HIGHLIGHT_ALPHA } from '../hooks/useSeriesColors'
@@ -124,6 +129,16 @@ export function AnnotationPanel({
                 >
                   <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis text-foreground">{v.name}</span>
                 </button>
+                {v.definition && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <CircleQuestionMark size={14} />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{v.definition}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
 
                 <div className="flex items-center pr-2">
                   <ConfirmDialog
