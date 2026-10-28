@@ -6,6 +6,7 @@ import { Reorder, useDragControls, useMotionValue } from "motion/react";
 
 import { useRaisedShadow } from "@/hooks/useRaisedShadow";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ReorderList = ({
     className,
@@ -78,7 +79,7 @@ const ReorderListItem = ({ item, className, withDragHandle = false }) => {
             dragControls={withDragHandle ? dragControls : undefined}
         >
             {withDragHandle ? (
-                <div className="relative flex items-center gap-2 w-full">
+                <div className="group relative flex items-center gap-2 w-full">
                     {React.isValidElement(item)
                         ? React.cloneElement(item, {
                               className: cn(
@@ -87,10 +88,19 @@ const ReorderListItem = ({ item, className, withDragHandle = false }) => {
                               ),
                           })
                         : item}
-                    <Grip
-                        className="size-5 absolute cursor-grab right-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        onPointerDown={(e) => dragControls.start(e)}
-                    />
+                    <Tooltip>
+                        <TooltipTrigger
+                            render={
+                                <Grip
+                                    className="size-5 absolute cursor-grab right-5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                    onPointerDown={(e) => dragControls.start(e)}
+                                />
+                            }
+                        />
+                        <TooltipContent>
+                            <p>Drag to reorder</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             ) : (
                 item

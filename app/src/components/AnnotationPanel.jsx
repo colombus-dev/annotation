@@ -119,19 +119,19 @@ export function AnnotationPanel({
               <div
                 key={v.name}
                 data-name={v.name}
-                className="flex items-center justify-between gap-2 border border-border rounded-lg pr-12 w-full"
+                className="flex items-center justify-between gap-2 border border-border rounded-lg pr-12 w-full transition group-hover:brightness-75"
                 style={{ background: `${v.color}${ANNOTATION_HIGHLIGHT_ALPHA}` }}
               >
                 <button
                   type="button"
                   onClick={() => onApply(v.name)}
-                  className="flex min-w-0 flex-1 items-center gap-2 rounded-l-lg py-1.5 pl-3 pr-2 text-left cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10"
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-l-lg py-1.5 pl-3 pr-2 text-left cursor-pointer"
                 >
                   <span className="font-medium text-[11px] whitespace-nowrap overflow-hidden text-ellipsis text-foreground">{v.name}</span>
                 </button>
                 {v.definition && (
                   <Tooltip>
-                    <TooltipTrigger>
+                    <TooltipTrigger className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
                       <CircleQuestionMark size={14} />
                     </TooltipTrigger>
                     <TooltipContent>
@@ -140,12 +140,18 @@ export function AnnotationPanel({
                   </Tooltip>
                 )}
 
-                <div className="flex items-center pr-2">
+                <div className="flex items-center">
                   <ConfirmDialog
-                    trigger={<TrashIcon size={14} />}
+                    trigger={
+                      <Tooltip>
+                        <TooltipTrigger render={<TrashIcon size={14} />} />
+                        <TooltipContent>
+                          <p>Delete value</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    }
                     triggerProps={{
                       className: 'text-muted-foreground hover:text-foreground transition-colors flex',
-                      title: 'Delete value',
                       'aria-label': `Delete ${v.name}`,
                     }}
                     title="Delete value?"
