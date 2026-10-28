@@ -13,7 +13,7 @@ class CreationMode(str, enum.Enum):
 
 class ValueRecord(pydantic.BaseModel):
     name: str
-    definition: str
+    definition: str = ""
     creation_mode: CreationMode
     order: int = 0
 
