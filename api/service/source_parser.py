@@ -5,25 +5,43 @@ import ujson
 
 
 class Step(enum.Enum):
-    DATA_ACQUISITION = "Data Acquisition"
-    DATA_PREPARATION = "Data Preparation"
-    MODELING = "Modeling"
-    TRAINING = "Training"
-    EVALUATION = "Evaluation"
-    PREDICTION = "Prediction"
+    DATA_COLLECTION = (
+        "Data Collection",
+        "The process of gathering and importing data from various sources into a data analysis environment for further processing and analysis.",
+    )
+    DATA_PREPARATION = (
+        "Data Preparation",
+        "The initial phase of data science where  raw data is cleaned, filtered, transformed, and normalized to ensure quality and relevance for analysis.",
+    )
+    DATA_MODELING = (
+        "Data Modeling",
+        "The process of creating mathematical or computational representations of real-world phenomena using statistical and machine learning techniques to extract insights and make predictions.",
+    )
+    MODEL_DEPLOYMENT = (
+        "Model Deployment",
+        "The application of a previously trained  machine learning model to new, unseen data for the purpose of making predictions or decisions.",
+    )
+    MODEL_EVALUATION = (
+        "Model Evaluation",
+        "The process of assessing a trained  model's performance using specific metrics and comparing it against new datasets or real-world scenarios to determine its effectiveness and reliability.",
+    )
+    SAVE_RESULTS = (
+        "Save Results",
+        "The process of serializing and persisting data for future use or analysis.",
+    )
 
 
 class AlgorithmFamily(enum.Enum):
-    LINEAR_MODELS = "Linear Models"
-    DECISION_TREE = "Decision Tree"
-    RANDOM_FOREST = "Random Forest"
-    GRADIENT_BOOSTING = "Gradient Boosting"
-    SVM = "SVM"
-    KNN = "KNN"
-    NAIVE_BAYES = "Naive Bayes"
-    NEURAL_NETWORK = "Neural Network"
-    CLUSTERING = "Clustering"
-    DIMENSIONALITY_REDUCTION = "Dimensionality Reduction"
+    LINEAR_MODELS = "Linear Models", ""
+    DECISION_TREE = "Decision Tree", ""
+    RANDOM_FOREST = "Random Forest", ""
+    GRADIENT_BOOSTING = "Gradient Boosting", ""
+    SVM = "SVM", ""
+    KNN = "KNN", ""
+    NAIVE_BAYES = "Naive Bayes", ""
+    NEURAL_NETWORK = "Neural Network", ""
+    CLUSTERING = "Clustering", ""
+    DIMENSIONALITY_REDUCTION = "Dimensionality Reduction", ""
 
 
 class SourceLine(typing.TypedDict):
