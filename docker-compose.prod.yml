@@ -2,12 +2,16 @@ services:
   annotate_app:
     image: ghcr.io/colombus-dev/annotation-app:latest
     restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     networks:
       - colombus-net
 
   annotate_api:
     image: ghcr.io/colombus-dev/annotation-api:latest
     restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     environment:
       ENVIRONMENT: production
       ROOT_PATH: /annotate
