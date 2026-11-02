@@ -56,8 +56,8 @@ jobs:
           file: Dockerfile.prod
           push: true
           tags: ${{ steps.meta-api.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=annotation-api
+          cache-to: type=gha,mode=max,scope=annotation-api
 
       - name: Push annotation-app
         uses: docker/build-push-action@v5
@@ -66,5 +66,5 @@ jobs:
           file: ./app/Dockerfile.prod
           push: true
           tags: ${{ steps.meta-app.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=annotation-app
+          cache-to: type=gha,mode=max,scope=annotation-app
